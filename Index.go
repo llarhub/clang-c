@@ -4698,8 +4698,8 @@ func (_llcppg_param1 Cursor) IBOutletCollectionType() Type {
 // \returns a non-zero value if the traversal was terminated
 // prematurely by the visitor returning \c CXChildVisit_Break.
 //
-// llgo:link Cursor.VisitChildren C.clang_visitChildren
-func (parent Cursor) VisitChildren(visitor CursorVisitor, client_data ClientData) c.Uint {
+//go:linkname VisitChildren C.clang_visitChildren
+func VisitChildren(parent Cursor, visitor CursorVisitor, client_data ClientData) c.Uint {
 	return 0
 }
 
@@ -6397,7 +6397,7 @@ func (loc IdxLoc) IndexLocGetCXSourceLocation() SourceLocation {
 // \returns a non-zero value if the traversal was terminated
 // prematurely by the visitor returning \c CXFieldVisit_Break.
 //
-// llgo:link Type.VisitFields C.clang_Type_visitFields
+// -llgo:link Type.VisitFields C.clang_Type_visitFields
 func (T Type) VisitFields(visitor FieldVisitor, client_data ClientData) c.Uint {
 	return 0
 }
@@ -6420,7 +6420,7 @@ func (T Type) VisitFields(visitor FieldVisitor, client_data ClientData) c.Uint {
 // \returns a non-zero value if the traversal was terminated
 // prematurely by the visitor returning \c CXFieldVisit_Break.
 //
-// llgo:link Type.VisitCXXBaseClasses C.clang_visitCXXBaseClasses
+// -llgo:link Type.VisitCXXBaseClasses C.clang_visitCXXBaseClasses
 func (T Type) VisitCXXBaseClasses(visitor FieldVisitor, client_data ClientData) c.Uint {
 	return 0
 }
@@ -6443,7 +6443,7 @@ func (T Type) VisitCXXBaseClasses(visitor FieldVisitor, client_data ClientData) 
 // \returns A non-zero value if the traversal was terminated
 // prematurely by the visitor returning \c CXFieldVisit_Break.
 //
-// llgo:link Type.VisitCXXMethods C.clang_visitCXXMethods
+// -llgo:link Type.VisitCXXMethods C.clang_visitCXXMethods
 func (T Type) VisitCXXMethods(visitor FieldVisitor, client_data ClientData) c.Uint {
 	return 0
 }
