@@ -3328,16 +3328,16 @@ func (TU *TranslationUnitImpl) Reparse(num_unsaved_files c.Uint, unsaved_files *
 // Returns the human-readable null-terminated C string that represents
 //  the name of the memory category.  This string should never be freed.
 //
-// llgo:link TUResourceUsageKind.TUResourceUsageName C.clang_getTUResourceUsageName
-func (kind TUResourceUsageKind) TUResourceUsageName() *c.Char {
+// llgo:link TUResourceUsageKind.Name C.clang_getTUResourceUsageName
+func (kind TUResourceUsageKind) Name() *c.Char {
 	return nil
 }
 
 // Return the memory usage of a translation unit.  This object
 //  should be released with clang_disposeCXTUResourceUsage().
 //
-// llgo:link (*TranslationUnitImpl).CXTUResourceUsage C.clang_getCXTUResourceUsage
-func (TU *TranslationUnitImpl) CXTUResourceUsage() TUResourceUsage {
+// llgo:link (*TranslationUnitImpl).ResourceUsage C.clang_getCXTUResourceUsage
+func (TU *TranslationUnitImpl) ResourceUsage() TUResourceUsage {
 	return TUResourceUsage{}
 }
 
@@ -4622,8 +4622,8 @@ func (C Cursor) BinaryOpcode() X_BinaryOperatorKind {
 //
 // @deprecated: use clang_getBinaryOperatorKindSpelling instead
 //
-// llgo:link X_BinaryOperatorKind.CursorGetBinaryOpcodeStr C.clang_Cursor_getBinaryOpcodeStr
-func (Op X_BinaryOperatorKind) CursorGetBinaryOpcodeStr() String {
+// llgo:link X_BinaryOperatorKind.Spelling C.clang_Cursor_getBinaryOpcodeStr
+func (Op X_BinaryOperatorKind) Spelling() String {
 	return String{}
 }
 
@@ -5686,8 +5686,8 @@ func ExecuteOnThread(fn func(_llcppg_param1 unsafe.Pointer), user_data unsafe.Po
 //
 // \returns the kind of the chunk at the index \c chunk_number.
 //
-// llgo:link CompletionString.CompletionChunkKind C.clang_getCompletionChunkKind
-func (completion_string CompletionString) CompletionChunkKind(chunk_number c.Uint) CompletionChunkKind {
+// llgo:link CompletionString.ChunkKind C.clang_getCompletionChunkKind
+func (completion_string CompletionString) ChunkKind(chunk_number c.Uint) CompletionChunkKind {
 	return 0
 }
 
@@ -5700,8 +5700,8 @@ func (completion_string CompletionString) CompletionChunkKind(chunk_number c.Uin
 //
 // \returns the text associated with the chunk at index \c chunk_number.
 //
-// llgo:link CompletionString.CompletionChunkText C.clang_getCompletionChunkText
-func (completion_string CompletionString) CompletionChunkText(chunk_number c.Uint) String {
+// llgo:link CompletionString.ChunkText C.clang_getCompletionChunkText
+func (completion_string CompletionString) ChunkText(chunk_number c.Uint) String {
 	return String{}
 }
 
@@ -5715,15 +5715,15 @@ func (completion_string CompletionString) CompletionChunkText(chunk_number c.Uin
 // \returns the completion string associated with the chunk at index
 // \c chunk_number.
 //
-// llgo:link CompletionString.CompletionChunk C.clang_getCompletionChunkCompletionString
-func (completion_string CompletionString) CompletionChunk(chunk_number c.Uint) CompletionString {
+// llgo:link CompletionString.Chunk C.clang_getCompletionChunkCompletionString
+func (completion_string CompletionString) Chunk(chunk_number c.Uint) CompletionString {
 	return completion_string
 }
 
 // Retrieve the number of chunks in the given code-completion string.
 //
-// llgo:link CompletionString.NumCompletionChunks C.clang_getNumCompletionChunks
-func (completion_string CompletionString) NumCompletionChunks() c.Uint {
+// llgo:link CompletionString.NumChunks C.clang_getNumCompletionChunks
+func (completion_string CompletionString) NumChunks() c.Uint {
 	return 0
 }
 
@@ -5738,8 +5738,8 @@ func (completion_string CompletionString) NumCompletionChunks() c.Uint {
 // \returns The priority of this completion string. Smaller values indicate
 // higher-priority (more likely) completions.
 //
-// llgo:link CompletionString.CompletionPriority C.clang_getCompletionPriority
-func (completion_string CompletionString) CompletionPriority() c.Uint {
+// llgo:link CompletionString.Priority C.clang_getCompletionPriority
+func (completion_string CompletionString) Priority() c.Uint {
 	return 0
 }
 
@@ -5750,8 +5750,8 @@ func (completion_string CompletionString) CompletionPriority() c.Uint {
 //
 // \returns The availability of the completion string.
 //
-// llgo:link CompletionString.CompletionAvailability C.clang_getCompletionAvailability
-func (completion_string CompletionString) CompletionAvailability() AvailabilityKind {
+// llgo:link CompletionString.Availability C.clang_getCompletionAvailability
+func (completion_string CompletionString) Availability() AvailabilityKind {
 	return 0
 }
 
@@ -5763,8 +5763,8 @@ func (completion_string CompletionString) CompletionAvailability() AvailabilityK
 // \returns the number of annotations associated with the given completion
 // string.
 //
-// llgo:link CompletionString.CompletionNumAnnotations C.clang_getCompletionNumAnnotations
-func (completion_string CompletionString) CompletionNumAnnotations() c.Uint {
+// llgo:link CompletionString.NumAnnotations C.clang_getCompletionNumAnnotations
+func (completion_string CompletionString) NumAnnotations() c.Uint {
 	return 0
 }
 
@@ -5778,8 +5778,8 @@ func (completion_string CompletionString) CompletionNumAnnotations() c.Uint {
 // \returns annotation string associated with the completion at index
 // \c annotation_number, or a NULL string if that annotation is not available.
 //
-// llgo:link CompletionString.CompletionAnnotation C.clang_getCompletionAnnotation
-func (completion_string CompletionString) CompletionAnnotation(annotation_number c.Uint) String {
+// llgo:link CompletionString.Annotation C.clang_getCompletionAnnotation
+func (completion_string CompletionString) Annotation(annotation_number c.Uint) String {
 	return String{}
 }
 
@@ -5798,16 +5798,16 @@ func (completion_string CompletionString) CompletionAnnotation(annotation_number
 // \returns The name of the completion parent, e.g., "NSObject" if
 // the completion string represents a method in the NSObject class.
 //
-// llgo:link CompletionString.CompletionParent C.clang_getCompletionParent
-func (completion_string CompletionString) CompletionParent(kind *CursorKind) String {
+// llgo:link CompletionString.Parent C.clang_getCompletionParent
+func (completion_string CompletionString) Parent(kind *CursorKind) String {
 	return String{}
 }
 
 // Retrieve the brief documentation comment attached to the declaration
 // that corresponds to the given completion string.
 //
-// llgo:link CompletionString.CompletionBriefComment C.clang_getCompletionBriefComment
-func (completion_string CompletionString) CompletionBriefComment() String {
+// llgo:link CompletionString.BriefComment C.clang_getCompletionBriefComment
+func (completion_string CompletionString) BriefComment() String {
 	return String{}
 }
 
@@ -5836,8 +5836,8 @@ func (cursor Cursor) CompletionString() CompletionString {
 // \return The number of fix-its which must be applied before the completion at
 // completion_index can be applied
 //
-// llgo:link (*CodeCompleteResults).CompletionNumFixIts C.clang_getCompletionNumFixIts
-func (results *CodeCompleteResults) CompletionNumFixIts(completion_index c.Uint) c.Uint {
+// llgo:link (*CodeCompleteResults).NumFixIts C.clang_getCompletionNumFixIts
+func (results *CodeCompleteResults) NumFixIts(completion_index c.Uint) c.Uint {
 	return 0
 }
 
@@ -5883,8 +5883,8 @@ func (results *CodeCompleteResults) CompletionNumFixIts(completion_index c.Uint)
 // \returns The fix-it string that must replace the code at replacement_range
 // before the completion at completion_index can be applied
 //
-// llgo:link (*CodeCompleteResults).CompletionFixIt C.clang_getCompletionFixIt
-func (results *CodeCompleteResults) CompletionFixIt(completion_index c.Uint, fixit_index c.Uint, replacement_range *SourceRange) String {
+// llgo:link (*CodeCompleteResults).FixIt C.clang_getCompletionFixIt
+func (results *CodeCompleteResults) FixIt(completion_index c.Uint, fixit_index c.Uint, replacement_range *SourceRange) String {
 	return String{}
 }
 
@@ -5972,8 +5972,8 @@ func (TU *TranslationUnitImpl) CodeCompleteAt(complete_filename *c.Char, complet
 // \param Results The set of results to sort.
 // \param NumResults The number of results in \p Results.
 //
-// llgo:link (*CompletionResult).SortCodeCompletionResults C.clang_sortCodeCompletionResults
-func (Results *CompletionResult) SortCodeCompletionResults(NumResults c.Uint) {
+// llgo:link (*CompletionResult).Sort C.clang_sortCodeCompletionResults
+func (Results *CompletionResult) Sort(NumResults c.Uint) {
 }
 
 // Free the given set of code-completion results.
@@ -5985,8 +5985,8 @@ func (Results *CodeCompleteResults) Dispose() {
 // Determine the number of diagnostics produced prior to the
 // location where code completion was performed.
 //
-// llgo:link (*CodeCompleteResults).CodeCompleteGetNumDiagnostics C.clang_codeCompleteGetNumDiagnostics
-func (Results *CodeCompleteResults) CodeCompleteGetNumDiagnostics() c.Uint {
+// llgo:link (*CodeCompleteResults).NumDiagnostics C.clang_codeCompleteGetNumDiagnostics
+func (Results *CodeCompleteResults) NumDiagnostics() c.Uint {
 	return 0
 }
 
@@ -5998,8 +5998,8 @@ func (Results *CodeCompleteResults) CodeCompleteGetNumDiagnostics() c.Uint {
 // \returns the requested diagnostic. This diagnostic must be freed
 // via a call to \c clang_disposeDiagnostic().
 //
-// llgo:link (*CodeCompleteResults).CodeCompleteGetDiagnostic C.clang_codeCompleteGetDiagnostic
-func (Results *CodeCompleteResults) CodeCompleteGetDiagnostic(Index c.Uint) Diagnostic {
+// llgo:link (*CodeCompleteResults).Diagnostic C.clang_codeCompleteGetDiagnostic
+func (Results *CodeCompleteResults) Diagnostic(Index c.Uint) Diagnostic {
 	return 0
 }
 
@@ -6011,8 +6011,8 @@ func (Results *CodeCompleteResults) CodeCompleteGetDiagnostic(Index c.Uint) Diag
 // \returns the kinds of completions that are appropriate for use
 // along with the given code completion results.
 //
-// llgo:link (*CodeCompleteResults).CodeCompleteGetContexts C.clang_codeCompleteGetContexts
-func (Results *CodeCompleteResults) CodeCompleteGetContexts() c.UlongLong {
+// llgo:link (*CodeCompleteResults).Contexts C.clang_codeCompleteGetContexts
+func (Results *CodeCompleteResults) Contexts() c.UlongLong {
 	return 0
 }
 
@@ -6031,8 +6031,8 @@ func (Results *CodeCompleteResults) CodeCompleteGetContexts() c.UlongLong {
 // \returns the container kind, or CXCursor_InvalidCode if there is not a
 // container
 //
-// llgo:link (*CodeCompleteResults).CodeCompleteGetContainerKind C.clang_codeCompleteGetContainerKind
-func (Results *CodeCompleteResults) CodeCompleteGetContainerKind(IsIncomplete *c.Uint) CursorKind {
+// llgo:link (*CodeCompleteResults).ContainerKind C.clang_codeCompleteGetContainerKind
+func (Results *CodeCompleteResults) ContainerKind(IsIncomplete *c.Uint) CursorKind {
 	return 0
 }
 
@@ -6044,8 +6044,8 @@ func (Results *CodeCompleteResults) CodeCompleteGetContainerKind(IsIncomplete *c
 //
 // \returns the USR for the container
 //
-// llgo:link (*CodeCompleteResults).CodeCompleteGetContainerUSR C.clang_codeCompleteGetContainerUSR
-func (Results *CodeCompleteResults) CodeCompleteGetContainerUSR() String {
+// llgo:link (*CodeCompleteResults).ContainerUSR C.clang_codeCompleteGetContainerUSR
+func (Results *CodeCompleteResults) ContainerUSR() String {
 	return String{}
 }
 
@@ -6059,8 +6059,8 @@ func (Results *CodeCompleteResults) CodeCompleteGetContainerUSR() String {
 // \returns the selector (or partial selector) that has been entered thus far
 // for an Objective-C message send.
 //
-// llgo:link (*CodeCompleteResults).CodeCompleteGetObjCSelector C.clang_codeCompleteGetObjCSelector
-func (Results *CodeCompleteResults) CodeCompleteGetObjCSelector() String {
+// llgo:link (*CodeCompleteResults).ObjCSelector C.clang_codeCompleteGetObjCSelector
+func (Results *CodeCompleteResults) ObjCSelector() String {
 	return String{}
 }
 
@@ -6091,8 +6091,8 @@ func GetInclusions(tu TranslationUnit, visitor InclusionVisitor, client_data Cli
 // into its corresponding type.
 // If it's an expression, tries to evaluate the expression.
 //
-// llgo:link Cursor.Cursor_Evaluate C.clang_Cursor_Evaluate
-func (C Cursor) Cursor_Evaluate() EvalResult {
+// llgo:link Cursor.Evaluate C.clang_Cursor_Evaluate
+func (C Cursor) Evaluate() EvalResult {
 	return 0
 }
 
@@ -6194,72 +6194,72 @@ func (TU *TranslationUnitImpl) FindIncludesInFile(file File, visitor CursorAndRa
 	return 0
 }
 
-// llgo:link IdxEntityKind.IndexIsEntityObjCContainerKind C.clang_index_isEntityObjCContainerKind
-func (_llcppg_param1 IdxEntityKind) IndexIsEntityObjCContainerKind() c.Int {
+// llgo:link IdxEntityKind.IsEntityObjCContainerKind C.clang_index_isEntityObjCContainerKind
+func (_llcppg_param1 IdxEntityKind) IsEntityObjCContainerKind() c.Int {
 	return 0
 }
 
-// llgo:link (*IdxDeclInfo).IndexGetObjCContainerDeclInfo C.clang_index_getObjCContainerDeclInfo
-func (_llcppg_param1 *IdxDeclInfo) IndexGetObjCContainerDeclInfo() *IdxObjCContainerDeclInfo {
+// llgo:link (*IdxDeclInfo).ObjCContainerDeclInfo C.clang_index_getObjCContainerDeclInfo
+func (_llcppg_param1 *IdxDeclInfo) ObjCContainerDeclInfo() *IdxObjCContainerDeclInfo {
 	return nil
 }
 
-// llgo:link (*IdxDeclInfo).IndexGetObjCInterfaceDeclInfo C.clang_index_getObjCInterfaceDeclInfo
-func (_llcppg_param1 *IdxDeclInfo) IndexGetObjCInterfaceDeclInfo() *IdxObjCInterfaceDeclInfo {
+// llgo:link (*IdxDeclInfo).ObjCInterfaceDeclInfo C.clang_index_getObjCInterfaceDeclInfo
+func (_llcppg_param1 *IdxDeclInfo) ObjCInterfaceDeclInfo() *IdxObjCInterfaceDeclInfo {
 	return nil
 }
 
-// llgo:link (*IdxDeclInfo).IndexGetObjCCategoryDeclInfo C.clang_index_getObjCCategoryDeclInfo
-func (_llcppg_param1 *IdxDeclInfo) IndexGetObjCCategoryDeclInfo() *IdxObjCCategoryDeclInfo {
+// llgo:link (*IdxDeclInfo).ObjCCategoryDeclInfo C.clang_index_getObjCCategoryDeclInfo
+func (_llcppg_param1 *IdxDeclInfo) ObjCCategoryDeclInfo() *IdxObjCCategoryDeclInfo {
 	return nil
 }
 
-// llgo:link (*IdxDeclInfo).IndexGetObjCProtocolRefListInfo C.clang_index_getObjCProtocolRefListInfo
-func (_llcppg_param1 *IdxDeclInfo) IndexGetObjCProtocolRefListInfo() *IdxObjCProtocolRefListInfo {
+// llgo:link (*IdxDeclInfo).ObjCProtocolRefListInfo C.clang_index_getObjCProtocolRefListInfo
+func (_llcppg_param1 *IdxDeclInfo) ObjCProtocolRefListInfo() *IdxObjCProtocolRefListInfo {
 	return nil
 }
 
-// llgo:link (*IdxDeclInfo).IndexGetObjCPropertyDeclInfo C.clang_index_getObjCPropertyDeclInfo
-func (_llcppg_param1 *IdxDeclInfo) IndexGetObjCPropertyDeclInfo() *IdxObjCPropertyDeclInfo {
+// llgo:link (*IdxDeclInfo).ObjCPropertyDeclInfo C.clang_index_getObjCPropertyDeclInfo
+func (_llcppg_param1 *IdxDeclInfo) ObjCPropertyDeclInfo() *IdxObjCPropertyDeclInfo {
 	return nil
 }
 
-// llgo:link (*IdxAttrInfo).IndexGetIBOutletCollectionAttrInfo C.clang_index_getIBOutletCollectionAttrInfo
-func (_llcppg_param1 *IdxAttrInfo) IndexGetIBOutletCollectionAttrInfo() *IdxIBOutletCollectionAttrInfo {
+// llgo:link (*IdxAttrInfo).IBOutletCollectionAttrInfo C.clang_index_getIBOutletCollectionAttrInfo
+func (_llcppg_param1 *IdxAttrInfo) IBOutletCollectionAttrInfo() *IdxIBOutletCollectionAttrInfo {
 	return nil
 }
 
-// llgo:link (*IdxDeclInfo).IndexGetCXXClassDeclInfo C.clang_index_getCXXClassDeclInfo
-func (_llcppg_param1 *IdxDeclInfo) IndexGetCXXClassDeclInfo() *IdxCXXClassDeclInfo {
+// llgo:link (*IdxDeclInfo).CXXClassDeclInfo C.clang_index_getCXXClassDeclInfo
+func (_llcppg_param1 *IdxDeclInfo) CXXClassDeclInfo() *IdxCXXClassDeclInfo {
 	return nil
 }
 
 // For retrieving a custom CXIdxClientContainer attached to a
 // container.
 //
-// llgo:link (*IdxContainerInfo).IndexGetClientContainer C.clang_index_getClientContainer
-func (_llcppg_param1 *IdxContainerInfo) IndexGetClientContainer() IdxClientContainer {
+// llgo:link (*IdxContainerInfo).ClientContainer C.clang_index_getClientContainer
+func (_llcppg_param1 *IdxContainerInfo) ClientContainer() IdxClientContainer {
 	return 0
 }
 
 // For setting a custom CXIdxClientContainer attached to a
 // container.
 //
-// llgo:link (*IdxContainerInfo).IndexSetClientContainer C.clang_index_setClientContainer
-func (_llcppg_param1 *IdxContainerInfo) IndexSetClientContainer(_llcppg_param2 IdxClientContainer) {
+// llgo:link (*IdxContainerInfo).SetClientContainer C.clang_index_setClientContainer
+func (_llcppg_param1 *IdxContainerInfo) SetClientContainer(_llcppg_param2 IdxClientContainer) {
 }
 
 // For retrieving a custom CXIdxClientEntity attached to an entity.
 //
-// llgo:link (*IdxEntityInfo).IndexGetClientEntity C.clang_index_getClientEntity
-func (_llcppg_param1 *IdxEntityInfo) IndexGetClientEntity() IdxClientEntity {
+// llgo:link (*IdxEntityInfo).ClientEntity C.clang_index_getClientEntity
+func (_llcppg_param1 *IdxEntityInfo) ClientEntity() IdxClientEntity {
 	return 0
 }
 
 // For setting a custom CXIdxClientEntity attached to an entity.
 //
-// llgo:link (*IdxEntityInfo).IndexSetClientEntity C.clang_index_setClientEntity
-func (_llcppg_param1 *IdxEntityInfo) IndexSetClientEntity(_llcppg_param2 IdxClientEntity) {
+// llgo:link (*IdxEntityInfo).SetClientEntity C.clang_index_setClientEntity
+func (_llcppg_param1 *IdxEntityInfo) SetClientEntity(_llcppg_param2 IdxClientEntity) {
 }
 
 // An indexing action/session, to be applied to one or multiple
@@ -6346,14 +6346,14 @@ func (_llcppg_param1 IndexAction) IndexTranslationUnit(client_data ClientData, i
 // location of the macro expansion and if it refers into a macro argument
 // retrieves the location of the argument.
 //
-// llgo:link IdxLoc.IndexLocGetFileLocation C.clang_indexLoc_getFileLocation
-func (loc IdxLoc) IndexLocGetFileLocation(indexFile *IdxClientFile, file *File, line *c.Uint, column *c.Uint, offset *c.Uint) {
+// llgo:link IdxLoc.FileLocation C.clang_indexLoc_getFileLocation
+func (loc IdxLoc) FileLocation(indexFile *IdxClientFile, file *File, line *c.Uint, column *c.Uint, offset *c.Uint) {
 }
 
 // Retrieve the CXSourceLocation represented by the given CXIdxLoc.
 //
-// llgo:link IdxLoc.IndexLocGetCXSourceLocation C.clang_indexLoc_getCXSourceLocation
-func (loc IdxLoc) IndexLocGetCXSourceLocation() SourceLocation {
+// llgo:link IdxLoc.CXSourceLocation C.clang_indexLoc_getCXSourceLocation
+func (loc IdxLoc) CXSourceLocation() SourceLocation {
 	return SourceLocation{}
 }
 
@@ -6458,15 +6458,15 @@ func GetRemappings(_llcppg_param1 *c.Char) Remapping
 //go:linkname GetRemappingsFromFileList C.clang_getRemappingsFromFileList
 func GetRemappingsFromFileList(_llcppg_param1 **c.Char, _llcppg_param2 c.Uint) Remapping
 
-// llgo:link Remapping.RemapGetNumFiles C.clang_remap_getNumFiles
-func (_llcppg_param1 Remapping) RemapGetNumFiles() c.Uint {
+// llgo:link Remapping.NumFiles C.clang_remap_getNumFiles
+func (_llcppg_param1 Remapping) NumFiles() c.Uint {
 	return 0
 }
 
-// llgo:link Remapping.RemapGetFilenames C.clang_remap_getFilenames
-func (_llcppg_param1 Remapping) RemapGetFilenames(_llcppg_param2 c.Uint, _llcppg_param3 *String, _llcppg_param4 *String) {
+// llgo:link Remapping.Filenames C.clang_remap_getFilenames
+func (_llcppg_param1 Remapping) Filenames(_llcppg_param2 c.Uint, _llcppg_param3 *String, _llcppg_param4 *String) {
 }
 
-// llgo:link Remapping.RemapDispose C.clang_remap_dispose
-func (_llcppg_param1 Remapping) RemapDispose() {
+// llgo:link Remapping.Dispose C.clang_remap_dispose
+func (_llcppg_param1 Remapping) Dispose() {
 }
