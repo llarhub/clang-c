@@ -8,10 +8,11 @@
 *.so
 *.dylib
 
+.DS_Store
+_out/
+
 # Test binary, built with `go test -c`
 *.test
-
-_out/
 
 # Code coverage profiles and other test artifacts
 *.out
