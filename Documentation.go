@@ -7,16 +7,10 @@ import (
 	"unsafe"
 )
 
-// A parsed comment.
-type Comment struct {
-	ASTNode         unsafe.Pointer
-	TranslationUnit TranslationUnit
-}
-
 // Describes the type of the comment AST node (\c CXComment).  A comment
 // node can be considered block content (e. g., paragraph), inline content
 // (plain text) or neither (the root AST node).
-type CommentKind c.Int
+type CommentKind c.Uint
 
 const (
 	// Null comment.  No AST node is constructed at the requested location
@@ -89,7 +83,7 @@ const (
 
 // The most appropriate rendering mode for an inline command, chosen on
 // command semantics in Doxygen.
-type CommentInlineCommandRenderKind c.Int
+type CommentInlineCommandRenderKind c.Uint
 
 const (
 	// Command argument should be rendered in a normal font.
@@ -106,7 +100,7 @@ const (
 )
 
 // Describes parameter passing direction for \\param or \\arg command.
-type CommentParamPassDirection c.Int
+type CommentParamPassDirection c.Uint
 
 const (
 	// The parameter is an input parameter.
@@ -117,6 +111,11 @@ const (
 	CommentParamPassDirection_InOut CommentParamPassDirection = 2
 )
 
+// A parsed comment.
+type Comment struct {
+	ASTNode         unsafe.Pointer
+	TranslationUnit TranslationUnit
+}
 type APISetImpl struct {
 }
 
@@ -519,8 +518,8 @@ func (self Comment) FullCommentGetAsXML() String {
 //
 // \returns Error code indicating success or failure of the APISet creation.
 //
-// llgo:link (*TranslationUnitImpl).CreateAPISet C.clang_createAPISet
-func (self *TranslationUnitImpl) CreateAPISet(out_api *APISet) ErrorCode {
+// llgo:link TranslationUnit.CreateAPISet C.clang_createAPISet
+func (self TranslationUnit) CreateAPISet(out_api *APISet) ErrorCode {
 	return 0
 }
 
@@ -528,8 +527,8 @@ func (self *TranslationUnitImpl) CreateAPISet(out_api *APISet) ErrorCode {
 //
 // The provided \c CXAPISet can not be used after this function is called.
 //
-// llgo:link (*APISetImpl).Dispose C.clang_disposeAPISet
-func (self *APISetImpl) Dispose() {
+// llgo:link APISet.Dispose C.clang_disposeAPISet
+func (self APISet) Dispose() {
 }
 
 // Generate a single symbol symbol graph for the given USR. Returns a null

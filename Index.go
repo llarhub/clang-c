@@ -4,46 +4,17 @@ package clang
 
 import (
 	"github.com/goplus/lib/c"
+	"github.com/goplus/lib/c/bitfield"
 	"unsafe"
 )
 
 const CINDEX_VERSION_MAJOR = 0
 const CINDEX_VERSION_MINOR = 64
 
-// An "index" that consists of a set of translation units that would
-// typically be linked together into an executable or library.
-type Index uintptr
-type TargetInfoImpl struct {
-}
-
-// An opaque type representing target information for a given translation
-// unit.
-type TargetInfo = *TargetInfoImpl
-type TranslationUnitImpl struct {
-}
-
-// A single translation unit, which resides in an index.
-type TranslationUnit = *TranslationUnitImpl
-
-// Opaque pointer representing client data that will be passed through
-// to various callbacks and visitors.
-type ClientData = unsafe.Pointer
-
-// Provides the contents of a file that has not yet been saved to disk.
-//
-// Each CXUnsavedFile instance provides the name of a file on the
-// system along with the current contents of that file that have not
-// yet been saved to disk.
-type UnsavedFile struct {
-	Filename *c.Char
-	Contents *c.Char
-	Length   c.Ulong
-}
-
 // Describes the availability of a particular entity, which indicates
 // whether the use of this entity will result in a warning or error due to
 // it being deprecated or unavailable.
-type AvailabilityKind c.Int
+type AvailabilityKind c.Uint
 
 const (
 	// The entity is available.
@@ -58,17 +29,10 @@ const (
 	Availability_NotAccessible AvailabilityKind = 3
 )
 
-// Describes a version number of the form major.minor.subminor.
-type Version struct {
-	Major    c.Int
-	Minor    c.Int
-	Subminor c.Int
-}
-
 // Describes the exception specification of a cursor.
 //
 // A negative value indicates that the cursor is not a function declaration.
-type Cursor_ExceptionSpecificationKind c.Int
+type Cursor_ExceptionSpecificationKind c.Uint
 
 const (
 	// The cursor has no exception specification.
@@ -93,7 +57,7 @@ const (
 	Cursor_ExceptionSpecificationKind_NoThrow Cursor_ExceptionSpecificationKind = 9
 )
 
-type Choice c.Int
+type Choice c.Uint
 
 const (
 	// Use the default value of an option that may depend on the process
@@ -105,7 +69,7 @@ const (
 	Choice_Disabled Choice = 2
 )
 
-type GlobalOptFlags c.Int
+type GlobalOptFlags c.Uint
 
 const (
 	// Used to indicate that no special CXIndex options are needed.
@@ -127,43 +91,12 @@ const (
 	GlobalOpt_ThreadBackgroundPriorityForAll GlobalOptFlags = 3
 )
 
-// Index initialization options.
-//
-// 0 is the default value of each member of this struct except for Size.
-// Initialize the struct in one of the following three ways to avoid adapting
-// code each time a new member is added to it:
-// \code
-// CXIndexOptions Opts;
-// memset(&Opts, 0, sizeof(Opts));
-// Opts.Size = sizeof(CXIndexOptions);
-// \endcode
-// or explicitly initialize the first data member and zero-initialize the rest:
-// \code
-// CXIndexOptions Opts = { sizeof(CXIndexOptions) };
-// \endcode
-// or to prevent the -Wmissing-field-initializers warning for the above version:
-// \code
-// CXIndexOptions Opts{};
-// Opts.Size = sizeof(CXIndexOptions);
-// \endcode
-type IndexOptions struct {
-	Size                                c.Uint
-	ThreadBackgroundPriorityForIndexing uint8
-	ThreadBackgroundPriorityForEditing  uint8
-	ExcludeDeclarationsFromPCH          c.Uint
-	DisplayDiagnostics                  c.Uint
-	StorePreamblesInMemory              c.Uint
-	X                                   c.Uint
-	PreambleStoragePath                 *c.Char
-	InvocationEmissionPath              *c.Char
-}
-
 // Flags that control the creation of translation units.
 //
 // The enumerators in this enumeration type are meant to be bitwise
 // ORed together to specify which options should be used when
 // constructing the translation unit.
-type TranslationUnit_Flags c.Int
+type TranslationUnit_Flags c.Uint
 
 const (
 	// Used to indicate that no special translation-unit options are
@@ -269,7 +202,7 @@ const (
 // The enumerators in this enumeration type are meant to be bitwise
 // ORed together to specify which options should be used when
 // saving the translation unit.
-type SaveTranslationUnit_Flags c.Int
+type SaveTranslationUnit_Flags c.Uint
 
 const
 // Used to indicate that no special saving options are needed.
@@ -277,7 +210,7 @@ SaveTranslationUnit_None SaveTranslationUnit_Flags = 0
 
 // Describes the kind of error that occurred (if any) in a call to
 // \c clang_saveTranslationUnit().
-type SaveError c.Int
+type SaveError c.Uint
 
 const (
 	// Indicates that no error occurred while saving a translation unit.
@@ -304,14 +237,14 @@ const (
 // The enumerators in this enumeration type are meant to be bitwise
 // ORed together to specify which options should be used when
 // reparsing the translation unit.
-type Reparse_Flags c.Int
+type Reparse_Flags c.Uint
 
 const
 // Used to indicate that no special reparsing options are needed.
 Reparse_None Reparse_Flags = 0
 
 // Categorizes how memory is being used by a translation unit.
-type TUResourceUsageKind c.Int
+type TUResourceUsageKind c.Uint
 
 const (
 	TUResourceUsage_AST                                TUResourceUsageKind = 1
@@ -334,22 +267,12 @@ const (
 	TUResourceUsage_Last                               TUResourceUsageKind = 14
 )
 
-type TUResourceUsageEntry struct {
-	Kind   TUResourceUsageKind
-	Amount c.Ulong
-}
-
-// The memory usage of a CXTranslationUnit, broken into categories.
-type TUResourceUsage struct {
-	Data       unsafe.Pointer
-	NumEntries c.Uint
-	Entries    *TUResourceUsageEntry
-}
-
 // Describes the kind of entity that a cursor refers to.
-type CursorKind c.Int
+type CursorKind c.Uint
 
 const (
+	// Declarations
+	//
 	// A declaration whose specific kind is not exposed via this
 	// interface.
 	//
@@ -439,14 +362,11 @@ const (
 	Cursor_FirstDecl CursorKind = 1
 	// An access specifier.
 	Cursor_LastDecl CursorKind = 39
-	// An access specifier.
-	Cursor_FirstRef CursorKind = 40
-	// An access specifier.
+	// Decl references
+	Cursor_FirstRef          CursorKind = 40
 	Cursor_ObjCSuperClassRef CursorKind = 40
-	// An access specifier.
-	Cursor_ObjCProtocolRef CursorKind = 41
-	// An access specifier.
-	Cursor_ObjCClassRef CursorKind = 42
+	Cursor_ObjCProtocolRef   CursorKind = 41
+	Cursor_ObjCClassRef      CursorKind = 42
 	// A reference to a type declaration.
 	//
 	// A type reference occurs anywhere where a type is named but not
@@ -538,26 +458,19 @@ const (
 	// A reference to a variable that occurs in some non-expression
 	// context, e.g., a C++ lambda capture list.
 	Cursor_LastRef CursorKind = 50
-	// A reference to a variable that occurs in some non-expression
-	// context, e.g., a C++ lambda capture list.
+	// Error conditions
 	Cursor_FirstInvalid CursorKind = 70
-	// A reference to a variable that occurs in some non-expression
-	// context, e.g., a C++ lambda capture list.
+	// Error conditions
 	Cursor_InvalidFile CursorKind = 70
-	// A reference to a variable that occurs in some non-expression
-	// context, e.g., a C++ lambda capture list.
+	// Error conditions
 	Cursor_NoDeclFound CursorKind = 71
-	// A reference to a variable that occurs in some non-expression
-	// context, e.g., a C++ lambda capture list.
+	// Error conditions
 	Cursor_NotImplemented CursorKind = 72
-	// A reference to a variable that occurs in some non-expression
-	// context, e.g., a C++ lambda capture list.
+	// Error conditions
 	Cursor_InvalidCode CursorKind = 73
-	// A reference to a variable that occurs in some non-expression
-	// context, e.g., a C++ lambda capture list.
+	// Error conditions
 	Cursor_LastInvalid CursorKind = 73
-	// A reference to a variable that occurs in some non-expression
-	// context, e.g., a C++ lambda capture list.
+	// Expressions
 	Cursor_FirstExpr CursorKind = 100
 	// An expression whose specific kind is not exposed via this
 	// interface.
@@ -704,7 +617,18 @@ const (
 	// };
 	// \endcode
 	Cursor_SizeOfPackExpr CursorKind = 143
-	Cursor_LambdaExpr     CursorKind = 144
+	// Represents a C++ lambda expression that produces a local function
+	// object.
+	//
+	// \code
+	// void abssort(float *x, unsigned N) {
+	//   std::sort(x, x + N,
+	//             [](float a, float b) {
+	//               return std::abs(a) < std::abs(b);
+	//             });
+	// }
+	// \endcode
+	Cursor_LambdaExpr CursorKind = 144
 	// Objective-c Boolean Literal.
 	Cursor_ObjCBoolLiteralExpr CursorKind = 145
 	// Represents the "self" expression in an Objective-C method.
@@ -733,7 +657,7 @@ const (
 	Cursor_PackIndexingExpr CursorKind = 156
 	//  Represents a C++26 pack indexing expression.
 	Cursor_LastExpr CursorKind = 156
-	//  Represents a C++26 pack indexing expression.
+	// Statements
 	Cursor_FirstStmt CursorKind = 200
 	// A statement whose specific kind is not exposed via this
 	// interface.
@@ -1016,10 +940,7 @@ const (
 	// The translation unit cursor exists primarily to act as the root
 	// cursor for traversing the contents of a translation unit.
 	Cursor_TranslationUnit CursorKind = 350
-	// Cursor that represents the translation unit itself.
-	//
-	// The translation unit cursor exists primarily to act as the root
-	// cursor for traversing the contents of a translation unit.
+	// Attributes
 	Cursor_FirstAttr CursorKind = 400
 	// An attribute whose specific kind is not exposed via this
 	// interface.
@@ -1150,29 +1071,26 @@ const (
 	// An attribute whose specific kind is not exposed via this
 	// interface.
 	Cursor_LastAttr CursorKind = 441
-	// An attribute whose specific kind is not exposed via this
-	// interface.
+	// Preprocessing
 	Cursor_PreprocessingDirective CursorKind = 500
-	// An attribute whose specific kind is not exposed via this
-	// interface.
+	// Preprocessing
 	Cursor_MacroDefinition CursorKind = 501
-	// An attribute whose specific kind is not exposed via this
-	// interface.
+	// Preprocessing
 	Cursor_MacroExpansion CursorKind = 502
-	// An attribute whose specific kind is not exposed via this
-	// interface.
+	// Preprocessing
 	Cursor_MacroInstantiation CursorKind = 502
-	// An attribute whose specific kind is not exposed via this
-	// interface.
+	// Preprocessing
 	Cursor_InclusionDirective CursorKind = 503
-	// An attribute whose specific kind is not exposed via this
-	// interface.
+	// Preprocessing
 	Cursor_FirstPreprocessing CursorKind = 500
-	// An attribute whose specific kind is not exposed via this
-	// interface.
+	// Preprocessing
 	Cursor_LastPreprocessing CursorKind = 503
+	// Extra Declarations
+	//
 	// A module import declaration.
 	Cursor_ModuleImportDecl CursorKind = 600
+	// Extra Declarations
+	//
 	// A module import declaration.
 	Cursor_TypeAliasTemplateDecl CursorKind = 601
 	// A static_assert or _Static_assert node
@@ -1189,30 +1107,8 @@ const (
 	Cursor_OverloadCandidate CursorKind = 700
 )
 
-// A cursor representing some element in the abstract syntax tree for
-// a translation unit.
-//
-// The cursor abstraction unifies the different kinds of entities in a
-// program--declaration, statements, expressions, references to declarations,
-// etc.--under a single "cursor" abstraction with a common set of operations.
-// Common operation for a cursor include: getting the physical location in
-// a source file where the cursor points, getting the name associated with a
-// cursor, and retrieving cursors for any child nodes of a particular cursor.
-//
-// Cursors can be produced in two specific ways.
-// clang_getTranslationUnitCursor() produces a cursor for a translation unit,
-// from which one can use clang_visitChildren() to explore the rest of the
-// translation unit. clang_getCursor() maps from a physical source location
-// to the entity that resides at that location, allowing one to map from the
-// source code into the AST.
-type Cursor struct {
-	Kind  CursorKind
-	Xdata c.Int
-	Data  [3]unsafe.Pointer
-}
-
 // Describe the linkage of the entity referred to by a cursor.
-type LinkageKind c.Int
+type LinkageKind c.Uint
 
 const (
 	// This value indicates that no linkage information is available
@@ -1230,7 +1126,7 @@ const (
 	Linkage_External LinkageKind = 4
 )
 
-type VisibilityKind c.Int
+type VisibilityKind c.Uint
 
 const (
 	// This value indicates that no visibility information is available
@@ -1244,19 +1140,8 @@ const (
 	Visibility_Default VisibilityKind = 3
 )
 
-// Describes the availability of a given entity on a particular platform, e.g.,
-// a particular class might only be available on Mac OS 10.7 or newer.
-type PlatformAvailability struct {
-	Platform    String
-	Introduced  Version
-	Deprecated  Version
-	Obsoleted   Version
-	Unavailable c.Int
-	Message     String
-}
-
 // Describe the "language" of the entity referred to by a cursor.
-type LanguageKind c.Int
+type LanguageKind c.Uint
 
 const (
 	Language_Invalid   LanguageKind = 0
@@ -1267,7 +1152,7 @@ const (
 
 // Describe the "thread-local storage (TLS) kind" of the declaration
 // referred to by a cursor.
-type TLSKind c.Int
+type TLSKind c.Uint
 
 const (
 	TLS_None    TLSKind = 0
@@ -1275,14 +1160,8 @@ const (
 	TLS_Static  TLSKind = 2
 )
 
-type CursorSetImpl struct {
-}
-
-// A fast container representing a set of CXCursors.
-type CursorSet = *CursorSetImpl
-
 // Describes the kind of type
-type TypeKind c.Int
+type TypeKind c.Uint
 
 const (
 	// Represents an invalid type (e.g., where no type is available).
@@ -1290,510 +1169,338 @@ const (
 	// A type whose specific kind is not exposed via this
 	// interface.
 	Type_Unexposed TypeKind = 1
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Void TypeKind = 2
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Bool TypeKind = 3
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Char_U TypeKind = 4
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_UChar TypeKind = 5
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Char16 TypeKind = 6
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Char32 TypeKind = 7
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_UShort TypeKind = 8
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_UInt TypeKind = 9
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_ULong TypeKind = 10
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_ULongLong TypeKind = 11
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_UInt128 TypeKind = 12
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Char_S TypeKind = 13
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_SChar TypeKind = 14
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_WChar TypeKind = 15
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Short TypeKind = 16
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Int TypeKind = 17
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Long TypeKind = 18
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_LongLong TypeKind = 19
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Int128 TypeKind = 20
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Float TypeKind = 21
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Double TypeKind = 22
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_LongDouble TypeKind = 23
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_NullPtr TypeKind = 24
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Overload TypeKind = 25
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Dependent TypeKind = 26
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_ObjCId TypeKind = 27
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_ObjCClass TypeKind = 28
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_ObjCSel TypeKind = 29
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Float128 TypeKind = 30
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Half TypeKind = 31
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Float16 TypeKind = 32
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_ShortAccum TypeKind = 33
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Accum TypeKind = 34
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_LongAccum TypeKind = 35
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_UShortAccum TypeKind = 36
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_UAccum TypeKind = 37
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_ULongAccum TypeKind = 38
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_BFloat16 TypeKind = 39
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Ibm128 TypeKind = 40
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_FirstBuiltin TypeKind = 2
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_LastBuiltin TypeKind = 40
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Complex TypeKind = 100
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Pointer TypeKind = 101
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_BlockPointer TypeKind = 102
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_LValueReference TypeKind = 103
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_RValueReference TypeKind = 104
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Record TypeKind = 105
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Enum TypeKind = 106
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Typedef TypeKind = 107
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_ObjCInterface TypeKind = 108
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_ObjCObjectPointer TypeKind = 109
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_FunctionNoProto TypeKind = 110
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_FunctionProto TypeKind = 111
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_ConstantArray TypeKind = 112
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Vector TypeKind = 113
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_IncompleteArray TypeKind = 114
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_VariableArray TypeKind = 115
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_DependentSizedArray TypeKind = 116
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_MemberPointer TypeKind = 117
-	// A type whose specific kind is not exposed via this
-	// interface.
+	// Builtin types
 	Type_Auto TypeKind = 118
 	// Represents a type that was referred to using an elaborated type keyword.
 	//
 	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
 	Type_Elaborated TypeKind = 119
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL PipeType.
 	Type_Pipe TypeKind = 120
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage1dRO TypeKind = 121
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage1dArrayRO TypeKind = 122
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage1dBufferRO TypeKind = 123
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dRO TypeKind = 124
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dArrayRO TypeKind = 125
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dDepthRO TypeKind = 126
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dArrayDepthRO TypeKind = 127
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dMSAARO TypeKind = 128
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dArrayMSAARO TypeKind = 129
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dMSAADepthRO TypeKind = 130
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dArrayMSAADepthRO TypeKind = 131
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage3dRO TypeKind = 132
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage1dWO TypeKind = 133
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage1dArrayWO TypeKind = 134
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage1dBufferWO TypeKind = 135
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dWO TypeKind = 136
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dArrayWO TypeKind = 137
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dDepthWO TypeKind = 138
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dArrayDepthWO TypeKind = 139
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dMSAAWO TypeKind = 140
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dArrayMSAAWO TypeKind = 141
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dMSAADepthWO TypeKind = 142
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dArrayMSAADepthWO TypeKind = 143
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage3dWO TypeKind = 144
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage1dRW TypeKind = 145
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage1dArrayRW TypeKind = 146
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage1dBufferRW TypeKind = 147
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dRW TypeKind = 148
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dArrayRW TypeKind = 149
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dDepthRW TypeKind = 150
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dArrayDepthRW TypeKind = 151
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dMSAARW TypeKind = 152
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dArrayMSAARW TypeKind = 153
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dMSAADepthRW TypeKind = 154
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage2dArrayMSAADepthRW TypeKind = 155
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLImage3dRW TypeKind = 156
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLSampler TypeKind = 157
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLEvent TypeKind = 158
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLQueue TypeKind = 159
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLReserveID TypeKind = 160
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_ObjCObject TypeKind = 161
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_ObjCTypeParam TypeKind = 162
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_Attributed TypeKind = 163
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLIntelSubgroupAVCMcePayload TypeKind = 164
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLIntelSubgroupAVCImePayload TypeKind = 165
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLIntelSubgroupAVCRefPayload TypeKind = 166
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLIntelSubgroupAVCSicPayload TypeKind = 167
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLIntelSubgroupAVCMceResult TypeKind = 168
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLIntelSubgroupAVCImeResult TypeKind = 169
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLIntelSubgroupAVCRefResult TypeKind = 170
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLIntelSubgroupAVCSicResult TypeKind = 171
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLIntelSubgroupAVCImeResultSingleReferenceStreamout TypeKind = 172
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLIntelSubgroupAVCImeResultDualReferenceStreamout TypeKind = 173
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLIntelSubgroupAVCImeSingleReferenceStreamin TypeKind = 174
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// OpenCL builtin types.
 	Type_OCLIntelSubgroupAVCImeDualReferenceStreamin TypeKind = 175
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// Old aliases for AVC OpenCL extension types.
 	Type_OCLIntelSubgroupAVCImeResultSingleRefStreamout TypeKind = 172
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// Old aliases for AVC OpenCL extension types.
 	Type_OCLIntelSubgroupAVCImeResultDualRefStreamout TypeKind = 173
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// Old aliases for AVC OpenCL extension types.
 	Type_OCLIntelSubgroupAVCImeSingleRefStreamin TypeKind = 174
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// Old aliases for AVC OpenCL extension types.
 	Type_OCLIntelSubgroupAVCImeDualRefStreamin TypeKind = 175
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// Old aliases for AVC OpenCL extension types.
 	Type_ExtVector TypeKind = 176
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// Old aliases for AVC OpenCL extension types.
 	Type_Atomic TypeKind = 177
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// Old aliases for AVC OpenCL extension types.
 	Type_BTFTagAttributed TypeKind = 178
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// HLSL Types
 	Type_HLSLResource TypeKind = 179
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// HLSL Types
 	Type_HLSLAttributedResource TypeKind = 180
-	// Represents a type that was referred to using an elaborated type keyword.
-	//
-	// E.g., struct S, or via a qualified name, e.g., N::M::type, or both.
+	// HLSL Types
 	Type_HLSLInlineSpirv TypeKind = 181
 )
 
 // Describes the calling convention of a function type
-type CallingConv c.Int
+type CallingConv c.Uint
 
 const (
-	CallingConv_Default            CallingConv = 0
-	CallingConv_C                  CallingConv = 1
-	CallingConv_X86StdCall         CallingConv = 2
-	CallingConv_X86FastCall        CallingConv = 3
-	CallingConv_X86ThisCall        CallingConv = 4
-	CallingConv_X86Pascal          CallingConv = 5
-	CallingConv_AAPCS              CallingConv = 6
-	CallingConv_AAPCS_VFP          CallingConv = 7
-	CallingConv_X86RegCall         CallingConv = 8
-	CallingConv_IntelOclBicc       CallingConv = 9
-	CallingConv_Win64              CallingConv = 10
-	CallingConv_X86_64Win64        CallingConv = 10
-	CallingConv_X86_64SysV         CallingConv = 11
-	CallingConv_X86VectorCall      CallingConv = 12
-	CallingConv_Swift              CallingConv = 13
-	CallingConv_PreserveMost       CallingConv = 14
-	CallingConv_PreserveAll        CallingConv = 15
-	CallingConv_AArch64VectorCall  CallingConv = 16
-	CallingConv_SwiftAsync         CallingConv = 17
-	CallingConv_AArch64SVEPCS      CallingConv = 18
-	CallingConv_M68kRTD            CallingConv = 19
-	CallingConv_PreserveNone       CallingConv = 20
-	CallingConv_RISCVVectorCall    CallingConv = 21
-	CallingConv_RISCVVLSCall_32    CallingConv = 22
-	CallingConv_RISCVVLSCall_64    CallingConv = 23
-	CallingConv_RISCVVLSCall_128   CallingConv = 24
-	CallingConv_RISCVVLSCall_256   CallingConv = 25
-	CallingConv_RISCVVLSCall_512   CallingConv = 26
-	CallingConv_RISCVVLSCall_1024  CallingConv = 27
-	CallingConv_RISCVVLSCall_2048  CallingConv = 28
-	CallingConv_RISCVVLSCall_4096  CallingConv = 29
-	CallingConv_RISCVVLSCall_8192  CallingConv = 30
+	CallingConv_Default      CallingConv = 0
+	CallingConv_C            CallingConv = 1
+	CallingConv_X86StdCall   CallingConv = 2
+	CallingConv_X86FastCall  CallingConv = 3
+	CallingConv_X86ThisCall  CallingConv = 4
+	CallingConv_X86Pascal    CallingConv = 5
+	CallingConv_AAPCS        CallingConv = 6
+	CallingConv_AAPCS_VFP    CallingConv = 7
+	CallingConv_X86RegCall   CallingConv = 8
+	CallingConv_IntelOclBicc CallingConv = 9
+	CallingConv_Win64        CallingConv = 10
+	// Alias for compatibility with older versions of API.
+	CallingConv_X86_64Win64 CallingConv = 10
+	// Alias for compatibility with older versions of API.
+	CallingConv_X86_64SysV CallingConv = 11
+	// Alias for compatibility with older versions of API.
+	CallingConv_X86VectorCall CallingConv = 12
+	// Alias for compatibility with older versions of API.
+	CallingConv_Swift CallingConv = 13
+	// Alias for compatibility with older versions of API.
+	CallingConv_PreserveMost CallingConv = 14
+	// Alias for compatibility with older versions of API.
+	CallingConv_PreserveAll CallingConv = 15
+	// Alias for compatibility with older versions of API.
+	CallingConv_AArch64VectorCall CallingConv = 16
+	// Alias for compatibility with older versions of API.
+	CallingConv_SwiftAsync CallingConv = 17
+	// Alias for compatibility with older versions of API.
+	CallingConv_AArch64SVEPCS CallingConv = 18
+	// Alias for compatibility with older versions of API.
+	CallingConv_M68kRTD CallingConv = 19
+	// Alias for compatibility with older versions of API.
+	CallingConv_PreserveNone CallingConv = 20
+	// Alias for compatibility with older versions of API.
+	CallingConv_RISCVVectorCall CallingConv = 21
+	// Alias for compatibility with older versions of API.
+	CallingConv_RISCVVLSCall_32 CallingConv = 22
+	// Alias for compatibility with older versions of API.
+	CallingConv_RISCVVLSCall_64 CallingConv = 23
+	// Alias for compatibility with older versions of API.
+	CallingConv_RISCVVLSCall_128 CallingConv = 24
+	// Alias for compatibility with older versions of API.
+	CallingConv_RISCVVLSCall_256 CallingConv = 25
+	// Alias for compatibility with older versions of API.
+	CallingConv_RISCVVLSCall_512 CallingConv = 26
+	// Alias for compatibility with older versions of API.
+	CallingConv_RISCVVLSCall_1024 CallingConv = 27
+	// Alias for compatibility with older versions of API.
+	CallingConv_RISCVVLSCall_2048 CallingConv = 28
+	// Alias for compatibility with older versions of API.
+	CallingConv_RISCVVLSCall_4096 CallingConv = 29
+	// Alias for compatibility with older versions of API.
+	CallingConv_RISCVVLSCall_8192 CallingConv = 30
+	// Alias for compatibility with older versions of API.
 	CallingConv_RISCVVLSCall_16384 CallingConv = 31
+	// Alias for compatibility with older versions of API.
 	CallingConv_RISCVVLSCall_32768 CallingConv = 32
+	// Alias for compatibility with older versions of API.
 	CallingConv_RISCVVLSCall_65536 CallingConv = 33
-	CallingConv_Invalid            CallingConv = 100
-	CallingConv_Unexposed          CallingConv = 200
+	// Alias for compatibility with older versions of API.
+	CallingConv_Invalid CallingConv = 100
+	// Alias for compatibility with older versions of API.
+	CallingConv_Unexposed CallingConv = 200
 )
-
-// The type of an element in the abstract syntax tree.
-type Type struct {
-	Kind TypeKind
-	Data [2]unsafe.Pointer
-}
 
 // Describes the kind of a template argument.
 //
 // See the definition of llvm::clang::TemplateArgument::ArgKind for full
 // element descriptions.
-type TemplateArgumentKind c.Int
+type TemplateArgumentKind c.Uint
 
 const (
 	TemplateArgumentKind_Null              TemplateArgumentKind = 0
@@ -1805,10 +1512,11 @@ const (
 	TemplateArgumentKind_TemplateExpansion TemplateArgumentKind = 6
 	TemplateArgumentKind_Expression        TemplateArgumentKind = 7
 	TemplateArgumentKind_Pack              TemplateArgumentKind = 8
-	TemplateArgumentKind_Invalid           TemplateArgumentKind = 9
+	// Indicates an error case, preventing the kind from being deduced.
+	TemplateArgumentKind_Invalid TemplateArgumentKind = 9
 )
 
-type TypeNullabilityKind c.Int
+type TypeNullabilityKind c.Uint
 
 const (
 	// Values of this type can never be null.
@@ -1852,7 +1560,7 @@ const (
 	TypeLayoutError_Undeduced TypeLayoutError = -6
 )
 
-type RefQualifierKind c.Int
+type RefQualifierKind c.Uint
 
 const (
 	// No ref-qualifier was provided.
@@ -1865,7 +1573,7 @@ const (
 
 // Represents the C++ access control level to a base class for a
 // cursor with kind CX_CXXBaseSpecifier.
-type CXXAccessSpecifier c.Int
+type CXXAccessSpecifier c.Uint
 
 const (
 	CXXInvalidAccessSpecifier CXXAccessSpecifier = 0
@@ -1876,7 +1584,7 @@ const (
 
 // Represents the storage classes as declared in the source. CX_SC_Invalid
 // was added for the case that the passed cursor in not a declaration.
-type StorageClass c.Int
+type StorageClass c.Uint
 
 const (
 	SC_Invalid              StorageClass = 0
@@ -1890,7 +1598,7 @@ const (
 )
 
 // Represents a specific kind of binary operator which can appear at a cursor.
-type X_BinaryOperatorKind c.Int
+type X_BinaryOperatorKind c.Uint
 
 const (
 	BO_Invalid   X_BinaryOperatorKind = 0
@@ -1935,7 +1643,7 @@ const (
 //
 // A value of this enumeration type should be returned by each
 // \c CXCursorVisitor to indicate how clang_visitChildren() proceed.
-type ChildVisitResult c.Int
+type ChildVisitResult c.Uint
 
 const (
 	// Terminates the cursor traversal.
@@ -1948,28 +1656,10 @@ const (
 	ChildVisit_Recurse ChildVisitResult = 2
 )
 
-// Visitor invoked for each cursor found by a traversal.
-//
-// This visitor function will be invoked for each cursor found by
-// clang_visitCursorChildren(). Its first argument is the cursor being
-// visited, its second argument is the parent visitor for that cursor,
-// and its third argument is the client data provided to
-// clang_visitCursorChildren().
-//
-// The visitor should return one of the \c CXChildVisitResult values
-// to direct clang_visitCursorChildren().
-//
-// llgo:type C
-type CursorVisitor = func(_llcppg_param1 Cursor, _llcppg_param2 Cursor, _llcppg_param3 ClientData) ChildVisitResult
-
-// Opaque pointer representing a policy that controls pretty printing
-// for \c clang_getCursorPrettyPrinted.
-type PrintingPolicy uintptr
-
 // Properties for the printing policy.
 //
 // See \c clang::PrintingPolicy for more information.
-type PrintingPolicyProperty c.Int
+type PrintingPolicyProperty c.Uint
 
 const (
 	PrintingPolicy_Indentation                           PrintingPolicyProperty = 0
@@ -2002,7 +1692,7 @@ const (
 )
 
 // Property attributes for a \c CXCursor_ObjCPropertyDecl.
-type ObjCPropertyAttrKind c.Int
+type ObjCPropertyAttrKind c.Uint
 
 const (
 	ObjCPropertyAttrNoattr           ObjCPropertyAttrKind = 0
@@ -2023,7 +1713,7 @@ const (
 
 // 'Qualifiers' written next to the return and parameter types in
 // Objective-C method declarations.
-type ObjCDeclQualifierKind c.Int
+type ObjCDeclQualifierKind c.Uint
 
 const (
 	ObjCDeclQualifier_None   ObjCDeclQualifierKind = 0
@@ -2035,13 +1725,7 @@ const (
 	ObjCDeclQualifier_Oneway ObjCDeclQualifierKind = 32
 )
 
-// \defgroup CINDEX_MODULE Module introspection
-//
-// The functions in this group provide access to information about modules.
-//
-// @{
-type Module uintptr
-type NameRefFlags c.Int
+type NameRefFlags c.Uint
 
 const (
 	// Include the nested-name-specifier, e.g. Foo:: in x.Foo::y, in the
@@ -2062,7 +1746,7 @@ const (
 )
 
 // Describes a kind of token.
-type TokenKind c.Int
+type TokenKind c.Uint
 
 const (
 	// A token that contains some kind of punctuation.
@@ -2077,37 +1761,12 @@ const (
 	Token_Comment TokenKind = 4
 )
 
-// Describes a single preprocessing token.
-type Token struct {
-	IntData [4]c.Uint
-	PtrData unsafe.Pointer
-}
-
-// A semantic string that describes a code-completion result.
-//
-// A semantic string that describes the formatting of a code-completion
-// result as a single "template" of text that should be inserted into the
-// source buffer when a particular code-completion result is selected.
-// Each semantic string is made up of some number of "chunks", each of which
-// contains some text along with a description of what that text means, e.g.,
-// the name of the entity being referenced, whether the text chunk is part of
-// the template, or whether it is a "placeholder" that the user should replace
-// with actual code,of a specific kind. See \c CXCompletionChunkKind for a
-// description of the different kinds of chunks.
-type CompletionString uintptr
-
-// A single result of code completion.
-type CompletionResult struct {
-	CursorKind       CursorKind
-	CompletionString CompletionString
-}
-
 // Describes a single piece of text within a code-completion string.
 //
 // Each "chunk" within a code-completion string (\c CXCompletionString) is
 // either a piece of text with a specific "kind" that describes how that text
 // should be interpreted by the client or is another completion string.
-type CompletionChunkKind c.Int
+type CompletionChunkKind c.Uint
 
 const (
 	// A code-completion string that describes "optional" text that
@@ -2231,22 +1890,12 @@ const (
 	CompletionChunk_VerticalSpace CompletionChunkKind = 20
 )
 
-// Contains the results of code-completion.
-//
-// This data structure contains the results of code completion, as
-// produced by \c clang_codeCompleteAt(). Its contents must be freed by
-// \c clang_disposeCodeCompleteResults.
-type CodeCompleteResults struct {
-	Results    *CompletionResult
-	NumResults c.Uint
-}
-
 // Flags that can be passed to \c clang_codeCompleteAt() to
 // modify its behavior.
 //
 // The enumerators in this enumeration can be bitwise-OR'd together to
 // provide multiple options to \c clang_codeCompleteAt().
-type CodeComplete_Flags c.Int
+type CodeComplete_Flags c.Uint
 
 const (
 	// Whether to include macros within the set of code
@@ -2271,7 +1920,7 @@ const (
 //
 // The enumerators in this enumeration may be bitwise-OR'd together if multiple
 // contexts are occurring simultaneously.
-type CompletionContext c.Int
+type CompletionContext c.Uint
 
 const (
 	// The context for completions is unexposed, as only Clang results
@@ -2343,19 +1992,7 @@ const (
 	CompletionContext_Unknown CompletionContext = 8388607
 )
 
-// Visitor invoked for each file in a translation unit
-//        (used with clang_getInclusions()).
-//
-// This visitor function will be invoked by clang_getInclusions() for each
-// file included (either at the top-level or by \#include directives) within
-// a translation unit.  The first argument is the file being included, and
-// the second and third arguments provide the inclusion stack.  The
-// array is sorted in order of immediate inclusion.  For example,
-// the first element refers to the location that included 'included_file'.
-//
-// llgo:type C
-type InclusionVisitor = func(_llcppg_param1 File, _llcppg_param2 *SourceLocation, _llcppg_param3 c.Uint, _llcppg_param4 ClientData)
-type EvalResultKind c.Int
+type EvalResultKind c.Uint
 
 const (
 	Eval_Int            EvalResultKind = 1
@@ -2367,24 +2004,17 @@ const (
 	Eval_UnExposed      EvalResultKind = 0
 )
 
-// Evaluation result of a cursor
-type EvalResult uintptr
-
 // \defgroup CINDEX_HIGH Higher level API functions
 //
 // @{
-type VisitorResult c.Int
+type VisitorResult c.Uint
 
 const (
 	Visit_Break    VisitorResult = 0
 	Visit_Continue VisitorResult = 1
 )
 
-type CursorAndRangeVisitor struct {
-	Context unsafe.Pointer
-	Visit   func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 Cursor, _llcppg_param3 SourceRange) VisitorResult
-}
-type Result c.Int
+type Result c.Uint
 
 const (
 	// Function returned successfully.
@@ -2396,44 +2026,7 @@ const (
 	Result_VisitBreak Result = 2
 )
 
-// The client's data object that is associated with a CXFile.
-type IdxClientFile uintptr
-
-// The client's data object that is associated with a semantic entity.
-type IdxClientEntity uintptr
-
-// The client's data object that is associated with a semantic container
-// of entities.
-type IdxClientContainer uintptr
-
-// The client's data object that is associated with an AST file (PCH
-// or module).
-type IdxClientASTFile uintptr
-
-// Source location passed to index callbacks.
-type IdxLoc struct {
-	PtrData [2]unsafe.Pointer
-	IntData c.Uint
-}
-
-// Data for ppIncludedFile callback.
-type IdxIncludedFileInfo struct {
-	HashLoc        IdxLoc
-	Filename       *c.Char
-	File           File
-	IsImport       c.Int
-	IsAngled       c.Int
-	IsModuleImport c.Int
-}
-
-// Data for IndexerCallbacks#importedASTFile.
-type IdxImportedASTFileInfo struct {
-	File       File
-	Module     Module
-	Loc        IdxLoc
-	IsImplicit c.Int
-}
-type IdxEntityKind c.Int
+type IdxEntityKind c.Uint
 
 const (
 	IdxEntity_Unexposed             IdxEntityKind = 0
@@ -2466,7 +2059,7 @@ const (
 	IdxEntity_CXXConcept            IdxEntityKind = 27
 )
 
-type IdxEntityLanguage c.Int
+type IdxEntityLanguage c.Uint
 
 const (
 	IdxEntityLang_None  IdxEntityLanguage = 0
@@ -2484,7 +2077,7 @@ const (
 // CXIdxEntity_CXXConstructor
 // CXIdxEntity_CXXConversionFunction
 // CXIdxEntity_CXXTypeAlias
-type IdxEntityCXXTemplateKind c.Int
+type IdxEntityCXXTemplateKind c.Uint
 
 const (
 	IdxEntity_NonTemplate                   IdxEntityCXXTemplateKind = 0
@@ -2493,7 +2086,7 @@ const (
 	IdxEntity_TemplateSpecialization        IdxEntityCXXTemplateKind = 3
 )
 
-type IdxAttrKind c.Int
+type IdxAttrKind c.Uint
 
 const (
 	IdxAttr_Unexposed          IdxAttrKind = 0
@@ -2502,50 +2095,11 @@ const (
 	IdxAttr_IBOutletCollection IdxAttrKind = 3
 )
 
-type IdxAttrInfo struct {
-	Kind   IdxAttrKind
-	Cursor Cursor
-	Loc    IdxLoc
-}
-type IdxEntityInfo struct {
-	Kind          IdxEntityKind
-	TemplateKind  IdxEntityCXXTemplateKind
-	Lang          IdxEntityLanguage
-	Name          *c.Char
-	USR           *c.Char
-	Cursor        Cursor
-	Attributes    **IdxAttrInfo
-	NumAttributes c.Uint
-}
-type IdxContainerInfo struct {
-	Cursor Cursor
-}
-type IdxIBOutletCollectionAttrInfo struct {
-	AttrInfo    *IdxAttrInfo
-	ObjcClass   *IdxEntityInfo
-	ClassCursor Cursor
-	ClassLoc    IdxLoc
-}
-type IdxDeclInfoFlags c.Int
+type IdxDeclInfoFlags c.Uint
 
 const IdxDeclFlag_Skipped IdxDeclInfoFlags = 1
 
-type IdxDeclInfo struct {
-	EntityInfo        *IdxEntityInfo
-	Cursor            Cursor
-	Loc               IdxLoc
-	SemanticContainer *IdxContainerInfo
-	LexicalContainer  *IdxContainerInfo
-	IsRedeclaration   c.Int
-	IsDefinition      c.Int
-	IsContainer       c.Int
-	DeclAsContainer   *IdxContainerInfo
-	IsImplicit        c.Int
-	Attributes        **IdxAttrInfo
-	NumAttributes     c.Uint
-	Flags             c.Uint
-}
-type IdxObjCContainerKind c.Int
+type IdxObjCContainerKind c.Uint
 
 const (
 	IdxObjCContainer_ForwardRef     IdxObjCContainerKind = 0
@@ -2553,52 +2107,11 @@ const (
 	IdxObjCContainer_Implementation IdxObjCContainerKind = 2
 )
 
-type IdxObjCContainerDeclInfo struct {
-	DeclInfo *IdxDeclInfo
-	Kind     IdxObjCContainerKind
-}
-type IdxBaseClassInfo struct {
-	Base   *IdxEntityInfo
-	Cursor Cursor
-	Loc    IdxLoc
-}
-type IdxObjCProtocolRefInfo struct {
-	Protocol *IdxEntityInfo
-	Cursor   Cursor
-	Loc      IdxLoc
-}
-type IdxObjCProtocolRefListInfo struct {
-	Protocols    **IdxObjCProtocolRefInfo
-	NumProtocols c.Uint
-}
-type IdxObjCInterfaceDeclInfo struct {
-	ContainerInfo *IdxObjCContainerDeclInfo
-	SuperInfo     *IdxBaseClassInfo
-	Protocols     *IdxObjCProtocolRefListInfo
-}
-type IdxObjCCategoryDeclInfo struct {
-	ContainerInfo *IdxObjCContainerDeclInfo
-	ObjcClass     *IdxEntityInfo
-	ClassCursor   Cursor
-	ClassLoc      IdxLoc
-	Protocols     *IdxObjCProtocolRefListInfo
-}
-type IdxObjCPropertyDeclInfo struct {
-	DeclInfo *IdxDeclInfo
-	Getter   *IdxEntityInfo
-	Setter   *IdxEntityInfo
-}
-type IdxCXXClassDeclInfo struct {
-	DeclInfo *IdxDeclInfo
-	Bases    **IdxBaseClassInfo
-	NumBases c.Uint
-}
-
 // Data for IndexerCallbacks#indexEntityReference.
 //
 // This may be deprecated in a future version as this duplicates
 // the \c CXSymbolRole_Implicit bit in \c CXSymbolRole.
-type IdxEntityRefKind c.Int
+type IdxEntityRefKind c.Uint
 
 const (
 	// The entity is referenced directly in user's code.
@@ -2612,7 +2125,7 @@ const (
 //
 // Internal: this currently mirrors low 9 bits of clang::index::SymbolRole with
 // higher bits zeroed. These high bits may be exposed in the future.
-type SymbolRole c.Int
+type SymbolRole c.Uint
 
 const (
 	SymbolRole_None        SymbolRole = 0
@@ -2627,34 +2140,7 @@ const (
 	SymbolRole_Implicit    SymbolRole = 256
 )
 
-// Data for IndexerCallbacks#indexEntityReference.
-type IdxEntityRefInfo struct {
-	Kind             IdxEntityRefKind
-	Cursor           Cursor
-	Loc              IdxLoc
-	ReferencedEntity *IdxEntityInfo
-	ParentEntity     *IdxEntityInfo
-	Container        *IdxContainerInfo
-	Role             SymbolRole
-}
-
-// A group of callbacks used by #clang_indexSourceFile and
-// #clang_indexTranslationUnit.
-type IndexerCallbacks struct {
-	AbortQuery             func(_llcppg_param1 ClientData, _llcppg_param2 unsafe.Pointer) c.Int
-	Diagnostic             func(_llcppg_param1 ClientData, _llcppg_param2 DiagnosticSet, _llcppg_param3 unsafe.Pointer)
-	EnteredMainFile        func(_llcppg_param1 ClientData, _llcppg_param2 File, _llcppg_param3 unsafe.Pointer) IdxClientFile
-	PpIncludedFile         func(_llcppg_param1 ClientData, _llcppg_param2 *IdxIncludedFileInfo) IdxClientFile
-	ImportedASTFile        func(_llcppg_param1 ClientData, _llcppg_param2 *IdxImportedASTFileInfo) IdxClientASTFile
-	StartedTranslationUnit func(_llcppg_param1 ClientData, _llcppg_param2 unsafe.Pointer) IdxClientContainer
-	IndexDeclaration       func(_llcppg_param1 ClientData, _llcppg_param2 *IdxDeclInfo)
-	IndexEntityReference   func(_llcppg_param1 ClientData, _llcppg_param2 *IdxEntityRefInfo)
-}
-
-// An indexing action/session, to be applied to one or multiple
-// translation units.
-type IndexAction uintptr
-type IndexOptFlags c.Int
+type IndexOptFlags c.Uint
 
 const (
 	// Used to indicate that no special indexing options are needed.
@@ -2677,21 +2163,8 @@ const (
 	IndexOpt_SkipParsedBodiesInSession IndexOptFlags = 16
 )
 
-// Visitor invoked for each field found by a traversal.
-//
-// This visitor function will be invoked for each field found by
-// \c clang_Type_visitFields. Its first argument is the cursor being
-// visited, its second argument is the client data provided to
-// \c clang_Type_visitFields.
-//
-// The visitor should return one of the \c CXVisitorResult values
-// to direct \c clang_Type_visitFields.
-//
-// llgo:type C
-type FieldVisitor = func(_llcppg_param1 Cursor, _llcppg_param2 ClientData) VisitorResult
-
 // Describes the kind of binary operators.
-type BinaryOperatorKind c.Int
+type BinaryOperatorKind c.Uint
 
 const (
 	// This value describes cursors which are not binary operators.
@@ -2767,7 +2240,7 @@ const (
 )
 
 // Describes the kind of unary operators.
-type UnaryOperatorKind c.Int
+type UnaryOperatorKind c.Uint
 
 const (
 	// This value describes cursors which are not unary operators.
@@ -2802,7 +2275,369 @@ const (
 	UnaryOperator_Coawait UnaryOperatorKind = 14
 )
 
-// @}
+// An "index" that consists of a set of translation units that would
+// typically be linked together into an executable or library.
+type Index uintptr
+type TargetInfoImpl struct {
+}
+
+// An opaque type representing target information for a given translation
+// unit.
+type TargetInfo = *TargetInfoImpl
+type TranslationUnitImpl struct {
+}
+
+// A single translation unit, which resides in an index.
+type TranslationUnit = *TranslationUnitImpl
+
+// Opaque pointer representing client data that will be passed through
+// to various callbacks and visitors.
+type ClientData = unsafe.Pointer
+
+// Provides the contents of a file that has not yet been saved to disk.
+//
+// Each CXUnsavedFile instance provides the name of a file on the
+// system along with the current contents of that file that have not
+// yet been saved to disk.
+type UnsavedFile struct {
+	Filename *c.Char
+	Contents *c.Char
+	Length   c.Ulong
+}
+
+// Describes a version number of the form major.minor.subminor.
+type Version struct {
+	Major    c.Int
+	Minor    c.Int
+	Subminor c.Int
+}
+
+// Index initialization options.
+//
+// 0 is the default value of each member of this struct except for Size.
+// Initialize the struct in one of the following three ways to avoid adapting
+// code each time a new member is added to it:
+// \code
+// CXIndexOptions Opts;
+// memset(&Opts, 0, sizeof(Opts));
+// Opts.Size = sizeof(CXIndexOptions);
+// \endcode
+// or explicitly initialize the first data member and zero-initialize the rest:
+// \code
+// CXIndexOptions Opts = { sizeof(CXIndexOptions) };
+// \endcode
+// or to prevent the -Wmissing-field-initializers warning for the above version:
+// \code
+// CXIndexOptions Opts{};
+// Opts.Size = sizeof(CXIndexOptions);
+// \endcode
+type IndexOptions struct {
+	Size                                c.Uint
+	ThreadBackgroundPriorityForIndexing uint8
+	ThreadBackgroundPriorityForEditing  uint8
+	_xgo_bits_0                         [2]uint8
+	PreambleStoragePath                 *c.Char
+	InvocationEmissionPath              *c.Char
+}
+type TUResourceUsageEntry struct {
+	Kind   TUResourceUsageKind
+	Amount c.Ulong
+}
+
+// The memory usage of a CXTranslationUnit, broken into categories.
+type TUResourceUsage struct {
+	Data       unsafe.Pointer
+	NumEntries c.Uint
+	Entries    *TUResourceUsageEntry
+}
+
+// A cursor representing some element in the abstract syntax tree for
+// a translation unit.
+//
+// The cursor abstraction unifies the different kinds of entities in a
+// program--declaration, statements, expressions, references to declarations,
+// etc.--under a single "cursor" abstraction with a common set of operations.
+// Common operation for a cursor include: getting the physical location in
+// a source file where the cursor points, getting the name associated with a
+// cursor, and retrieving cursors for any child nodes of a particular cursor.
+//
+// Cursors can be produced in two specific ways.
+// clang_getTranslationUnitCursor() produces a cursor for a translation unit,
+// from which one can use clang_visitChildren() to explore the rest of the
+// translation unit. clang_getCursor() maps from a physical source location
+// to the entity that resides at that location, allowing one to map from the
+// source code into the AST.
+type Cursor struct {
+	Kind  CursorKind
+	Xdata c.Int
+	Data  [3]unsafe.Pointer
+}
+
+// Describes the availability of a given entity on a particular platform, e.g.,
+// a particular class might only be available on Mac OS 10.7 or newer.
+type PlatformAvailability struct {
+	Platform    String
+	Introduced  Version
+	Deprecated  Version
+	Obsoleted   Version
+	Unavailable c.Int
+	Message     String
+}
+type CursorSetImpl struct {
+}
+
+// A fast container representing a set of CXCursors.
+type CursorSet = *CursorSetImpl
+
+// The type of an element in the abstract syntax tree.
+type Type struct {
+	Kind TypeKind
+	Data [2]unsafe.Pointer
+}
+
+// Visitor invoked for each cursor found by a traversal.
+//
+// This visitor function will be invoked for each cursor found by
+// clang_visitCursorChildren(). Its first argument is the cursor being
+// visited, its second argument is the parent visitor for that cursor,
+// and its third argument is the client data provided to
+// clang_visitCursorChildren().
+//
+// The visitor should return one of the \c CXChildVisitResult values
+// to direct clang_visitCursorChildren().
+//
+// llgo:type C
+type CursorVisitor = func(_llcppg_param1 Cursor, _llcppg_param2 Cursor, _llcppg_param3 ClientData) ChildVisitResult
+
+// Opaque pointer representing a policy that controls pretty printing
+// for \c clang_getCursorPrettyPrinted.
+type PrintingPolicy uintptr
+
+// \defgroup CINDEX_MODULE Module introspection
+//
+// The functions in this group provide access to information about modules.
+//
+// @{
+type Module uintptr
+
+// Describes a single preprocessing token.
+type Token struct {
+	IntData [4]c.Uint
+	PtrData unsafe.Pointer
+}
+
+// A semantic string that describes a code-completion result.
+//
+// A semantic string that describes the formatting of a code-completion
+// result as a single "template" of text that should be inserted into the
+// source buffer when a particular code-completion result is selected.
+// Each semantic string is made up of some number of "chunks", each of which
+// contains some text along with a description of what that text means, e.g.,
+// the name of the entity being referenced, whether the text chunk is part of
+// the template, or whether it is a "placeholder" that the user should replace
+// with actual code,of a specific kind. See \c CXCompletionChunkKind for a
+// description of the different kinds of chunks.
+type CompletionString uintptr
+
+// A single result of code completion.
+type CompletionResult struct {
+	CursorKind       CursorKind
+	CompletionString CompletionString
+}
+
+// Contains the results of code-completion.
+//
+// This data structure contains the results of code completion, as
+// produced by \c clang_codeCompleteAt(). Its contents must be freed by
+// \c clang_disposeCodeCompleteResults.
+type CodeCompleteResults struct {
+	Results    *CompletionResult
+	NumResults c.Uint
+}
+
+// Visitor invoked for each file in a translation unit
+//        (used with clang_getInclusions()).
+//
+// This visitor function will be invoked by clang_getInclusions() for each
+// file included (either at the top-level or by \#include directives) within
+// a translation unit.  The first argument is the file being included, and
+// the second and third arguments provide the inclusion stack.  The
+// array is sorted in order of immediate inclusion.  For example,
+// the first element refers to the location that included 'included_file'.
+//
+// llgo:type C
+type InclusionVisitor = func(_llcppg_param1 File, _llcppg_param2 *SourceLocation, _llcppg_param3 c.Uint, _llcppg_param4 ClientData)
+
+// Evaluation result of a cursor
+type EvalResult uintptr
+
+// llgo:type C
+type CursorAndRangeVisitor struct {
+	Context unsafe.Pointer
+	Visit   func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 Cursor, _llcppg_param3 SourceRange) VisitorResult
+}
+
+// The client's data object that is associated with a CXFile.
+type IdxClientFile uintptr
+
+// The client's data object that is associated with a semantic entity.
+type IdxClientEntity uintptr
+
+// The client's data object that is associated with a semantic container
+// of entities.
+type IdxClientContainer uintptr
+
+// The client's data object that is associated with an AST file (PCH
+// or module).
+type IdxClientASTFile uintptr
+
+// Source location passed to index callbacks.
+type IdxLoc struct {
+	PtrData [2]unsafe.Pointer
+	IntData c.Uint
+}
+
+// Data for ppIncludedFile callback.
+type IdxIncludedFileInfo struct {
+	HashLoc        IdxLoc
+	Filename       *c.Char
+	File           File
+	IsImport       c.Int
+	IsAngled       c.Int
+	IsModuleImport c.Int
+}
+
+// Data for IndexerCallbacks#importedASTFile.
+type IdxImportedASTFileInfo struct {
+	File       File
+	Module     Module
+	Loc        IdxLoc
+	IsImplicit c.Int
+}
+type IdxAttrInfo struct {
+	Kind   IdxAttrKind
+	Cursor Cursor
+	Loc    IdxLoc
+}
+type IdxEntityInfo struct {
+	Kind          IdxEntityKind
+	TemplateKind  IdxEntityCXXTemplateKind
+	Lang          IdxEntityLanguage
+	Name          *c.Char
+	USR           *c.Char
+	Cursor        Cursor
+	Attributes    **IdxAttrInfo
+	NumAttributes c.Uint
+}
+type IdxContainerInfo struct {
+	Cursor Cursor
+}
+type IdxIBOutletCollectionAttrInfo struct {
+	AttrInfo    *IdxAttrInfo
+	ObjcClass   *IdxEntityInfo
+	ClassCursor Cursor
+	ClassLoc    IdxLoc
+}
+type IdxDeclInfo struct {
+	EntityInfo        *IdxEntityInfo
+	Cursor            Cursor
+	Loc               IdxLoc
+	SemanticContainer *IdxContainerInfo
+	LexicalContainer  *IdxContainerInfo
+	IsRedeclaration   c.Int
+	IsDefinition      c.Int
+	IsContainer       c.Int
+	DeclAsContainer   *IdxContainerInfo
+	IsImplicit        c.Int
+	Attributes        **IdxAttrInfo
+	NumAttributes     c.Uint
+	Flags             c.Uint
+}
+type IdxObjCContainerDeclInfo struct {
+	DeclInfo *IdxDeclInfo
+	Kind     IdxObjCContainerKind
+}
+type IdxBaseClassInfo struct {
+	Base   *IdxEntityInfo
+	Cursor Cursor
+	Loc    IdxLoc
+}
+type IdxObjCProtocolRefInfo struct {
+	Protocol *IdxEntityInfo
+	Cursor   Cursor
+	Loc      IdxLoc
+}
+type IdxObjCProtocolRefListInfo struct {
+	Protocols    **IdxObjCProtocolRefInfo
+	NumProtocols c.Uint
+}
+type IdxObjCInterfaceDeclInfo struct {
+	ContainerInfo *IdxObjCContainerDeclInfo
+	SuperInfo     *IdxBaseClassInfo
+	Protocols     *IdxObjCProtocolRefListInfo
+}
+type IdxObjCCategoryDeclInfo struct {
+	ContainerInfo *IdxObjCContainerDeclInfo
+	ObjcClass     *IdxEntityInfo
+	ClassCursor   Cursor
+	ClassLoc      IdxLoc
+	Protocols     *IdxObjCProtocolRefListInfo
+}
+type IdxObjCPropertyDeclInfo struct {
+	DeclInfo *IdxDeclInfo
+	Getter   *IdxEntityInfo
+	Setter   *IdxEntityInfo
+}
+type IdxCXXClassDeclInfo struct {
+	DeclInfo *IdxDeclInfo
+	Bases    **IdxBaseClassInfo
+	NumBases c.Uint
+}
+
+// Data for IndexerCallbacks#indexEntityReference.
+type IdxEntityRefInfo struct {
+	Kind             IdxEntityRefKind
+	Cursor           Cursor
+	Loc              IdxLoc
+	ReferencedEntity *IdxEntityInfo
+	ParentEntity     *IdxEntityInfo
+	Container        *IdxContainerInfo
+	Role             SymbolRole
+}
+
+// A group of callbacks used by #clang_indexSourceFile and
+// #clang_indexTranslationUnit.
+//
+// llgo:type C
+type IndexerCallbacks struct {
+	AbortQuery             func(_llcppg_param1 ClientData, _llcppg_param2 unsafe.Pointer) c.Int
+	Diagnostic             func(_llcppg_param1 ClientData, _llcppg_param2 DiagnosticSet, _llcppg_param3 unsafe.Pointer)
+	EnteredMainFile        func(_llcppg_param1 ClientData, _llcppg_param2 File, _llcppg_param3 unsafe.Pointer) IdxClientFile
+	PpIncludedFile         func(_llcppg_param1 ClientData, _llcppg_param2 *IdxIncludedFileInfo) IdxClientFile
+	ImportedASTFile        func(_llcppg_param1 ClientData, _llcppg_param2 *IdxImportedASTFileInfo) IdxClientASTFile
+	StartedTranslationUnit func(_llcppg_param1 ClientData, _llcppg_param2 unsafe.Pointer) IdxClientContainer
+	IndexDeclaration       func(_llcppg_param1 ClientData, _llcppg_param2 *IdxDeclInfo)
+	IndexEntityReference   func(_llcppg_param1 ClientData, _llcppg_param2 *IdxEntityRefInfo)
+}
+
+// An indexing action/session, to be applied to one or multiple
+// translation units.
+type IndexAction uintptr
+
+// Visitor invoked for each field found by a traversal.
+//
+// This visitor function will be invoked for each field found by
+// \c clang_Type_visitFields. Its first argument is the cursor being
+// visited, its second argument is the client data provided to
+// \c clang_Type_visitFields.
+//
+// The visitor should return one of the \c CXVisitorResult values
+// to direct \c clang_Type_visitFields.
+//
+// llgo:type C
+type FieldVisitor = func(_llcppg_param1 Cursor, _llcppg_param2 ClientData) VisitorResult
+
+// CINDEX_DEPRECATED - disabled to silence MSVC deprecation warnings
 type Remapping uintptr
 
 // Provides a shared context for creating translation units.
@@ -2854,6 +2689,36 @@ func CreateIndex(excludeDeclarationsFromPCH c.Int, displayDiagnostics c.Int) Ind
 //
 // llgo:link Index.Dispose C.clang_disposeIndex
 func (self Index) Dispose() {
+}
+
+// unsigned int ExcludeDeclarationsFromPCH : 1
+func (p *IndexOptions) XGof_get_ExcludeDeclarationsFromPCH() c.Uint {
+	return c.Uint(bitfield.Unsigned(unsafe.Pointer(p), 48, 1))
+}
+
+// unsigned int ExcludeDeclarationsFromPCH : 1
+func (p *IndexOptions) XGof_set_ExcludeDeclarationsFromPCH(v c.Uint) {
+	bitfield.Set(unsafe.Pointer(p), 48, 1, uint64(v))
+}
+
+// unsigned int DisplayDiagnostics : 1
+func (p *IndexOptions) XGof_get_DisplayDiagnostics() c.Uint {
+	return c.Uint(bitfield.Unsigned(unsafe.Pointer(p), 49, 1))
+}
+
+// unsigned int DisplayDiagnostics : 1
+func (p *IndexOptions) XGof_set_DisplayDiagnostics(v c.Uint) {
+	bitfield.Set(unsafe.Pointer(p), 49, 1, uint64(v))
+}
+
+// unsigned int StorePreamblesInMemory : 1
+func (p *IndexOptions) XGof_get_StorePreamblesInMemory() c.Uint {
+	return c.Uint(bitfield.Unsigned(unsafe.Pointer(p), 50, 1))
+}
+
+// unsigned int StorePreamblesInMemory : 1
+func (p *IndexOptions) XGof_set_StorePreamblesInMemory(v c.Uint) {
+	bitfield.Set(unsafe.Pointer(p), 50, 1, uint64(v))
 }
 
 // Provides a shared context for creating translation units.
@@ -2954,8 +2819,8 @@ func (self Index) SetInvocationEmissionPathOption(Path *c.Char) {
 // multiple inclusions, either with the conventional
 // \#ifndef/\#define/\#endif macro guards or with \#pragma once.
 //
-// llgo:link (*TranslationUnitImpl).IsFileMultipleIncludeGuarded C.clang_isFileMultipleIncludeGuarded
-func (self *TranslationUnitImpl) IsFileMultipleIncludeGuarded(file File) c.Uint {
+// llgo:link TranslationUnit.IsFileMultipleIncludeGuarded C.clang_isFileMultipleIncludeGuarded
+func (self TranslationUnit) IsFileMultipleIncludeGuarded(file File) c.Uint {
 	return 0
 }
 
@@ -2968,8 +2833,8 @@ func (self *TranslationUnitImpl) IsFileMultipleIncludeGuarded(file File) c.Uint 
 // \returns the file handle for the named file in the translation unit \p tu,
 // or a NULL file handle if the file was not a part of this translation unit.
 //
-// llgo:link (*TranslationUnitImpl).File C.clang_getFile
-func (self *TranslationUnitImpl) File(file_name *c.Char) File {
+// llgo:link TranslationUnit.File C.clang_getFile
+func (self TranslationUnit) File(file_name *c.Char) File {
 	return 0
 }
 
@@ -2984,24 +2849,24 @@ func (self *TranslationUnitImpl) File(file_name *c.Char) File {
 // \returns a pointer to the buffer in memory that holds the contents of
 // \p file, or a NULL pointer when the file is not loaded.
 //
-// llgo:link (*TranslationUnitImpl).FileContents C.clang_getFileContents
-func (self *TranslationUnitImpl) FileContents(file File, size *c.SizeT) *c.Char {
+// llgo:link TranslationUnit.FileContents C.clang_getFileContents
+func (self TranslationUnit) FileContents(file File, size *c.SizeT) *c.Char {
 	return nil
 }
 
 // Retrieves the source location associated with a given file/line/column
 // in a particular translation unit.
 //
-// llgo:link (*TranslationUnitImpl).Location C.clang_getLocation
-func (self *TranslationUnitImpl) Location(file File, line c.Uint, column c.Uint) SourceLocation {
+// llgo:link TranslationUnit.Location C.clang_getLocation
+func (self TranslationUnit) Location(file File, line c.Uint, column c.Uint) SourceLocation {
 	return SourceLocation{}
 }
 
 // Retrieves the source location associated with a given character offset
 // in a particular translation unit.
 //
-// llgo:link (*TranslationUnitImpl).LocationForOffset C.clang_getLocationForOffset
-func (self *TranslationUnitImpl) LocationForOffset(file File, offset c.Uint) SourceLocation {
+// llgo:link TranslationUnit.LocationForOffset C.clang_getLocationForOffset
+func (self TranslationUnit) LocationForOffset(file File, offset c.Uint) SourceLocation {
 	return SourceLocation{}
 }
 
@@ -3010,8 +2875,8 @@ func (self *TranslationUnitImpl) LocationForOffset(file File, offset c.Uint) Sou
 // The preprocessor will skip lines when they are surrounded by an
 // if/ifdef/ifndef directive whose condition does not evaluate to true.
 //
-// llgo:link (*TranslationUnitImpl).SkippedRanges C.clang_getSkippedRanges
-func (self *TranslationUnitImpl) SkippedRanges(file File) *SourceRangeList {
+// llgo:link TranslationUnit.SkippedRanges C.clang_getSkippedRanges
+func (self TranslationUnit) SkippedRanges(file File) *SourceRangeList {
 	return nil
 }
 
@@ -3021,16 +2886,16 @@ func (self *TranslationUnitImpl) SkippedRanges(file File) *SourceRangeList {
 // The preprocessor will skip lines when they are surrounded by an
 // if/ifdef/ifndef directive whose condition does not evaluate to true.
 //
-// llgo:link (*TranslationUnitImpl).AllSkippedRanges C.clang_getAllSkippedRanges
-func (self *TranslationUnitImpl) AllSkippedRanges() *SourceRangeList {
+// llgo:link TranslationUnit.AllSkippedRanges C.clang_getAllSkippedRanges
+func (self TranslationUnit) AllSkippedRanges() *SourceRangeList {
 	return nil
 }
 
 // Determine the number of diagnostics produced for the given
 // translation unit.
 //
-// llgo:link (*TranslationUnitImpl).NumDiagnostics C.clang_getNumDiagnostics
-func (self *TranslationUnitImpl) NumDiagnostics() c.Uint {
+// llgo:link TranslationUnit.NumDiagnostics C.clang_getNumDiagnostics
+func (self TranslationUnit) NumDiagnostics() c.Uint {
 	return 0
 }
 
@@ -3042,8 +2907,8 @@ func (self *TranslationUnitImpl) NumDiagnostics() c.Uint {
 // \returns the requested diagnostic. This diagnostic must be freed
 // via a call to \c clang_disposeDiagnostic().
 //
-// llgo:link (*TranslationUnitImpl).Diagnostic C.clang_getDiagnostic
-func (self *TranslationUnitImpl) Diagnostic(Index c.Uint) Diagnostic {
+// llgo:link TranslationUnit.Diagnostic C.clang_getDiagnostic
+func (self TranslationUnit) Diagnostic(Index c.Uint) Diagnostic {
 	return 0
 }
 
@@ -3052,15 +2917,15 @@ func (self *TranslationUnitImpl) Diagnostic(Index c.Uint) Diagnostic {
 //
 // \param Unit the translation unit to query.
 //
-// llgo:link (*TranslationUnitImpl).DiagnosticSetFromTU C.clang_getDiagnosticSetFromTU
-func (self *TranslationUnitImpl) DiagnosticSetFromTU() DiagnosticSet {
+// llgo:link TranslationUnit.DiagnosticSetFromTU C.clang_getDiagnosticSetFromTU
+func (self TranslationUnit) DiagnosticSetFromTU() DiagnosticSet {
 	return 0
 }
 
 // Get the original translation unit source file name.
 //
-// llgo:link (*TranslationUnitImpl).Spelling C.clang_getTranslationUnitSpelling
-func (self *TranslationUnitImpl) Spelling() String {
+// llgo:link TranslationUnit.Spelling C.clang_getTranslationUnitSpelling
+func (self TranslationUnit) Spelling() String {
 	return String{}
 }
 
@@ -3219,8 +3084,8 @@ func (self Index) ParseTranslationUnit2FullArgv(source_filename *c.Char, command
 // set contains an unspecified set of options that save translation units with
 // the most commonly-requested data.
 //
-// llgo:link (*TranslationUnitImpl).DefaultSaveOptions C.clang_defaultSaveOptions
-func (self *TranslationUnitImpl) DefaultSaveOptions() c.Uint {
+// llgo:link TranslationUnit.DefaultSaveOptions C.clang_defaultSaveOptions
+func (self TranslationUnit) DefaultSaveOptions() c.Uint {
 	return 0
 }
 
@@ -3246,8 +3111,8 @@ func (self *TranslationUnitImpl) DefaultSaveOptions() c.Uint {
 // enumeration. Zero (CXSaveError_None) indicates that the translation unit was
 // saved successfully, while a non-zero value indicates that a problem occurred.
 //
-// llgo:link (*TranslationUnitImpl).Save C.clang_saveTranslationUnit
-func (self *TranslationUnitImpl) Save(FileName *c.Char, options c.Uint) c.Int {
+// llgo:link TranslationUnit.Save C.clang_saveTranslationUnit
+func (self TranslationUnit) Save(FileName *c.Char, options c.Uint) c.Int {
 	return 0
 }
 
@@ -3257,15 +3122,15 @@ func (self *TranslationUnitImpl) Save(FileName *c.Char, options c.Uint) c.Int {
 // side does not support any other calls than \c clang_reparseTranslationUnit
 // to resume it or \c clang_disposeTranslationUnit to dispose it completely.
 //
-// llgo:link (*TranslationUnitImpl).Suspend C.clang_suspendTranslationUnit
-func (self *TranslationUnitImpl) Suspend() c.Uint {
+// llgo:link TranslationUnit.Suspend C.clang_suspendTranslationUnit
+func (self TranslationUnit) Suspend() c.Uint {
 	return 0
 }
 
 // Destroy the specified CXTranslationUnit object.
 //
-// llgo:link (*TranslationUnitImpl).Dispose C.clang_disposeTranslationUnit
-func (self *TranslationUnitImpl) Dispose() {
+// llgo:link TranslationUnit.Dispose C.clang_disposeTranslationUnit
+func (self TranslationUnit) Dispose() {
 }
 
 // Returns the set of flags that is suitable for reparsing a translation
@@ -3277,8 +3142,8 @@ func (self *TranslationUnitImpl) Dispose() {
 // of reparsing. The set of optimizations enabled may change from one version
 // to the next.
 //
-// llgo:link (*TranslationUnitImpl).DefaultReparseOptions C.clang_defaultReparseOptions
-func (self *TranslationUnitImpl) DefaultReparseOptions() c.Uint {
+// llgo:link TranslationUnit.DefaultReparseOptions C.clang_defaultReparseOptions
+func (self TranslationUnit) DefaultReparseOptions() c.Uint {
 	return 0
 }
 
@@ -3320,8 +3185,8 @@ func (self *TranslationUnitImpl) DefaultReparseOptions() c.Uint {
 // \c clang_disposeTranslationUnit(TU).  The error codes returned by this
 // routine are described by the \c CXErrorCode enum.
 //
-// llgo:link (*TranslationUnitImpl).Reparse C.clang_reparseTranslationUnit
-func (self *TranslationUnitImpl) Reparse(num_unsaved_files c.Uint, unsaved_files *UnsavedFile, options c.Uint) c.Int {
+// llgo:link TranslationUnit.Reparse C.clang_reparseTranslationUnit
+func (self TranslationUnit) Reparse(num_unsaved_files c.Uint, unsaved_files *UnsavedFile, options c.Uint) c.Int {
 	return 0
 }
 
@@ -3336,8 +3201,8 @@ func (self TUResourceUsageKind) Name() *c.Char {
 // Return the memory usage of a translation unit.  This object
 //  should be released with clang_disposeCXTUResourceUsage().
 //
-// llgo:link (*TranslationUnitImpl).ResourceUsage C.clang_getCXTUResourceUsage
-func (self *TranslationUnitImpl) ResourceUsage() TUResourceUsage {
+// llgo:link TranslationUnit.ResourceUsage C.clang_getCXTUResourceUsage
+func (self TranslationUnit) ResourceUsage() TUResourceUsage {
 	return TUResourceUsage{}
 }
 
@@ -3349,23 +3214,23 @@ func (self TUResourceUsage) Dispose() {
 //
 // The CXTargetInfo object cannot outlive the CXTranslationUnit object.
 //
-// llgo:link (*TranslationUnitImpl).TargetInfo C.clang_getTranslationUnitTargetInfo
-func (self *TranslationUnitImpl) TargetInfo() TargetInfo {
+// llgo:link TranslationUnit.TargetInfo C.clang_getTranslationUnitTargetInfo
+func (self TranslationUnit) TargetInfo() TargetInfo {
 	return nil
 }
 
 // Destroy the CXTargetInfo object.
 //
-// llgo:link (*TargetInfoImpl).Dispose C.clang_TargetInfo_dispose
-func (self *TargetInfoImpl) Dispose() {
+// llgo:link TargetInfo.Dispose C.clang_TargetInfo_dispose
+func (self TargetInfo) Dispose() {
 }
 
 // Get the normalized target triple as a string.
 //
 // Returns the empty string in case of any error.
 //
-// llgo:link (*TargetInfoImpl).Triple C.clang_TargetInfo_getTriple
-func (self *TargetInfoImpl) Triple() String {
+// llgo:link TargetInfo.Triple C.clang_TargetInfo_getTriple
+func (self TargetInfo) Triple() String {
 	return String{}
 }
 
@@ -3373,8 +3238,8 @@ func (self *TargetInfoImpl) Triple() String {
 //
 // Returns -1 in case of error.
 //
-// llgo:link (*TargetInfoImpl).PointerWidth C.clang_TargetInfo_getPointerWidth
-func (self *TargetInfoImpl) PointerWidth() c.Int {
+// llgo:link TargetInfo.PointerWidth C.clang_TargetInfo_getPointerWidth
+func (self TargetInfo) PointerWidth() c.Int {
 	return 0
 }
 
@@ -3388,8 +3253,8 @@ func GetNullCursor() Cursor
 // The translation unit cursor can be used to start traversing the
 // various declarations within the given translation unit.
 //
-// llgo:link (*TranslationUnitImpl).Cursor C.clang_getTranslationUnitCursor
-func (self *TranslationUnitImpl) Cursor() Cursor {
+// llgo:link TranslationUnit.Cursor C.clang_getTranslationUnitCursor
+func (self TranslationUnit) Cursor() Cursor {
 	return Cursor{}
 }
 
@@ -3494,7 +3359,6 @@ func (self CursorKind) IsTranslationUnit() c.Uint {
 	return 0
 }
 
-// *
 // Determine whether the given cursor represents a preprocessing
 // element, such as a preprocessor directive or macro instantiation.
 //
@@ -3503,7 +3367,6 @@ func (self CursorKind) IsPreprocessing() c.Uint {
 	return 0
 }
 
-// *
 // Determine whether the given cursor represents a currently
 //  unexposed piece of the AST (e.g., CXCursor_UnexposedStmt).
 //
@@ -3647,16 +3510,16 @@ func CreateCursorSet() CursorSet
 
 // Disposes a CXCursorSet and releases its associated memory.
 //
-// llgo:link (*CursorSetImpl).Dispose C.clang_disposeCXCursorSet
-func (self *CursorSetImpl) Dispose() {
+// llgo:link CursorSet.Dispose C.clang_disposeCXCursorSet
+func (self CursorSet) Dispose() {
 }
 
 // Queries a CXCursorSet to see if it contains a specific CXCursor.
 //
 // \returns non-zero if the set contains the specified cursor.
 //
-// llgo:link (*CursorSetImpl).Contains C.clang_CXCursorSet_contains
-func (self *CursorSetImpl) Contains(cursor Cursor) c.Uint {
+// llgo:link CursorSet.Contains C.clang_CXCursorSet_contains
+func (self CursorSet) Contains(cursor Cursor) c.Uint {
 	return 0
 }
 
@@ -3664,8 +3527,8 @@ func (self *CursorSetImpl) Contains(cursor Cursor) c.Uint {
 //
 // \returns zero if the CXCursor was already in the set, and non-zero otherwise.
 //
-// llgo:link (*CursorSetImpl).Insert C.clang_CXCursorSet_insert
-func (self *CursorSetImpl) Insert(cursor Cursor) c.Uint {
+// llgo:link CursorSet.Insert C.clang_CXCursorSet_insert
+func (self CursorSet) Insert(cursor Cursor) c.Uint {
 	return 0
 }
 
@@ -3819,8 +3682,8 @@ func (self Cursor) IncludedFile() File {
 // \returns a cursor representing the entity at the given source location, or
 // a NULL cursor if no such entity can be found.
 //
-// llgo:link (*TranslationUnitImpl).GetCursor C.clang_getCursor
-func (self *TranslationUnitImpl) GetCursor(_llcppg_param2 SourceLocation) Cursor {
+// llgo:link TranslationUnit.GetCursor C.clang_getCursor
+func (self TranslationUnit) GetCursor(_llcppg_param2 SourceLocation) Cursor {
 	return Cursor{}
 }
 
@@ -4697,8 +4560,10 @@ func (self Cursor) IBOutletCollectionType() Type {
 // \returns a non-zero value if the traversal was terminated
 // prematurely by the visitor returning \c CXChildVisit_Break.
 //
-//go:linkname VisitChildren C.clang_visitChildren
-func VisitChildren(parent Cursor, visitor CursorVisitor, client_data ClientData) c.Uint
+// llgo:link Cursor.VisitChildren C.clang_visitChildren
+func (self Cursor) VisitChildren(visitor CursorVisitor, client_data ClientData) c.Uint {
+	return 0
+}
 
 // Retrieve a Unified Symbol Resolution (USR) for the entity referenced
 // by the given cursor.
@@ -5207,8 +5072,8 @@ func (self Cursor) Module() Module {
 // Given a CXFile header file, return the module that contains it, if one
 // exists.
 //
-// llgo:link (*TranslationUnitImpl).ModuleForFile C.clang_getModuleForFile
-func (self *TranslationUnitImpl) ModuleForFile(_llcppg_param2 File) Module {
+// llgo:link TranslationUnit.ModuleForFile C.clang_getModuleForFile
+func (self TranslationUnit) ModuleForFile(_llcppg_param2 File) Module {
 	return 0
 }
 
@@ -5263,8 +5128,8 @@ func (self Module) IsSystem() c.Int {
 //
 // \returns the number of top level headers associated with this module.
 //
-// llgo:link (*TranslationUnitImpl).ModuleGetNumTopLevelHeaders C.clang_Module_getNumTopLevelHeaders
-func (self *TranslationUnitImpl) ModuleGetNumTopLevelHeaders(Module Module) c.Uint {
+// llgo:link TranslationUnit.ModuleGetNumTopLevelHeaders C.clang_Module_getNumTopLevelHeaders
+func (self TranslationUnit) ModuleGetNumTopLevelHeaders(Module Module) c.Uint {
 	return 0
 }
 
@@ -5274,8 +5139,8 @@ func (self *TranslationUnitImpl) ModuleGetNumTopLevelHeaders(Module Module) c.Ui
 //
 // \returns the specified top level header associated with the module.
 //
-// llgo:link (*TranslationUnitImpl).ModuleGetTopLevelHeader C.clang_Module_getTopLevelHeader
-func (self *TranslationUnitImpl) ModuleGetTopLevelHeader(Module Module, Index c.Uint) File {
+// llgo:link TranslationUnit.ModuleGetTopLevelHeader C.clang_Module_getTopLevelHeader
+func (self TranslationUnit) ModuleGetTopLevelHeader(Module Module, Index c.Uint) File {
 	return 0
 }
 
@@ -5562,8 +5427,8 @@ func (self Cursor) ReferenceNameRange(NameFlags c.Uint, PieceIndex c.Uint) Sourc
 // exist. The returned pointer must be freed with clang_disposeTokens before the
 // translation unit is destroyed.
 //
-// llgo:link (*TranslationUnitImpl).Token C.clang_getToken
-func (self *TranslationUnitImpl) Token(Location SourceLocation) *Token {
+// llgo:link TranslationUnit.Token C.clang_getToken
+func (self TranslationUnit) Token(Location SourceLocation) *Token {
 	return nil
 }
 
@@ -5579,22 +5444,22 @@ func (self Token) Kind() TokenKind {
 // The spelling of a token is the textual representation of that token, e.g.,
 // the text of an identifier or keyword.
 //
-// llgo:link (*TranslationUnitImpl).TokenSpelling C.clang_getTokenSpelling
-func (self *TranslationUnitImpl) TokenSpelling(_llcppg_param2 Token) String {
+// llgo:link TranslationUnit.TokenSpelling C.clang_getTokenSpelling
+func (self TranslationUnit) TokenSpelling(_llcppg_param2 Token) String {
 	return String{}
 }
 
 // Retrieve the source location of the given token.
 //
-// llgo:link (*TranslationUnitImpl).TokenLocation C.clang_getTokenLocation
-func (self *TranslationUnitImpl) TokenLocation(_llcppg_param2 Token) SourceLocation {
+// llgo:link TranslationUnit.TokenLocation C.clang_getTokenLocation
+func (self TranslationUnit) TokenLocation(_llcppg_param2 Token) SourceLocation {
 	return SourceLocation{}
 }
 
 // Retrieve a source range that covers the given token.
 //
-// llgo:link (*TranslationUnitImpl).TokenExtent C.clang_getTokenExtent
-func (self *TranslationUnitImpl) TokenExtent(_llcppg_param2 Token) SourceRange {
+// llgo:link TranslationUnit.TokenExtent C.clang_getTokenExtent
+func (self TranslationUnit) TokenExtent(_llcppg_param2 Token) SourceRange {
 	return SourceRange{}
 }
 
@@ -5613,8 +5478,8 @@ func (self *TranslationUnitImpl) TokenExtent(_llcppg_param2 Token) SourceRange {
 // \param NumTokens will be set to the number of tokens in the \c *Tokens
 // array.
 //
-// llgo:link (*TranslationUnitImpl).Tokenize C.clang_tokenize
-func (self *TranslationUnitImpl) Tokenize(Range SourceRange, Tokens **Token, NumTokens *c.Uint) {
+// llgo:link TranslationUnit.Tokenize C.clang_tokenize
+func (self TranslationUnit) Tokenize(Range SourceRange, Tokens **Token, NumTokens *c.Uint) {
 }
 
 // Annotate the given set of tokens by providing cursors for each token
@@ -5646,22 +5511,17 @@ func (self *TranslationUnitImpl) Tokenize(Range SourceRange, Tokens **Token, Num
 // \param Cursors an array of \p NumTokens cursors, whose contents will be
 // replaced with the cursors corresponding to each token.
 //
-// llgo:link (*TranslationUnitImpl).AnnotateTokens C.clang_annotateTokens
-func (self *TranslationUnitImpl) AnnotateTokens(Tokens *Token, NumTokens c.Uint, Cursors *Cursor) {
+// llgo:link TranslationUnit.AnnotateTokens C.clang_annotateTokens
+func (self TranslationUnit) AnnotateTokens(Tokens *Token, NumTokens c.Uint, Cursors *Cursor) {
 }
 
 // Free the given set of tokens.
 //
-// llgo:link (*TranslationUnitImpl).DisposeTokens C.clang_disposeTokens
-func (self *TranslationUnitImpl) DisposeTokens(Tokens *Token, NumTokens c.Uint) {
+// llgo:link TranslationUnit.DisposeTokens C.clang_disposeTokens
+func (self TranslationUnit) DisposeTokens(Tokens *Token, NumTokens c.Uint) {
 }
 
-// \defgroup CINDEX_DEBUG Debugging facilities
-//
-// These routines are used for testing and debugging, only, and should not
-// be relied upon.
-//
-// @{
+// for debug/testing
 //
 // llgo:link CursorKind.Spelling C.clang_getCursorKindSpelling
 func (self CursorKind) Spelling() String {
@@ -5961,8 +5821,8 @@ func DefaultCodeCompleteOptions() c.Uint
 // freed with \c clang_disposeCodeCompleteResults(). If code
 // completion fails, returns NULL.
 //
-// llgo:link (*TranslationUnitImpl).CodeCompleteAt C.clang_codeCompleteAt
-func (self *TranslationUnitImpl) CodeCompleteAt(complete_filename *c.Char, complete_line c.Uint, complete_column c.Uint, unsaved_files *UnsavedFile, num_unsaved_files c.Uint, options c.Uint) *CodeCompleteResults {
+// llgo:link TranslationUnit.CodeCompleteAt C.clang_codeCompleteAt
+func (self TranslationUnit) CodeCompleteAt(complete_filename *c.Char, complete_line c.Uint, complete_column c.Uint, unsaved_files *UnsavedFile, num_unsaved_files c.Uint, options c.Uint) *CodeCompleteResults {
 	return nil
 }
 
@@ -6083,8 +5943,9 @@ func ToggleCrashRecovery(isEnabled c.Uint)
 //   file.  This does not include headers included by the PCH file (unless one
 //   is inspecting the inclusions in the PCH file itself).
 //
-//go:linkname GetInclusions C.clang_getInclusions
-func GetInclusions(tu TranslationUnit, visitor InclusionVisitor, client_data ClientData)
+// llgo:link TranslationUnit.Inclusions C.clang_getInclusions
+func (self TranslationUnit) Inclusions(visitor InclusionVisitor, client_data ClientData) {
+}
 
 // If cursor is a statement declaration tries to evaluate the
 // statement and if its variable, tries to evaluate its initializer,
@@ -6189,8 +6050,8 @@ func (self Cursor) FindReferencesInFile(file File, visitor CursorAndRangeVisitor
 //
 // \returns one of the CXResult enumerators.
 //
-// llgo:link (*TranslationUnitImpl).FindIncludesInFile C.clang_findIncludesInFile
-func (self *TranslationUnitImpl) FindIncludesInFile(file File, visitor CursorAndRangeVisitor) Result {
+// llgo:link TranslationUnit.FindIncludesInFile C.clang_findIncludesInFile
+func (self TranslationUnit) FindIncludesInFile(file File, visitor CursorAndRangeVisitor) Result {
 	return 0
 }
 
@@ -6375,8 +6236,10 @@ func (self IdxLoc) SourceLocation() SourceLocation {
 // \returns a non-zero value if the traversal was terminated
 // prematurely by the visitor returning \c CXFieldVisit_Break.
 //
-//go:linkname TypeVisitFields C.clang_Type_visitFields
-func TypeVisitFields(T Type, visitor FieldVisitor, client_data ClientData) c.Uint
+// llgo:link Type.VisitFields C.clang_Type_visitFields
+func (self Type) VisitFields(visitor FieldVisitor, client_data ClientData) c.Uint {
+	return 0
+}
 
 // Visit the base classes of a type.
 //
@@ -6396,8 +6259,10 @@ func TypeVisitFields(T Type, visitor FieldVisitor, client_data ClientData) c.Uin
 // \returns a non-zero value if the traversal was terminated
 // prematurely by the visitor returning \c CXFieldVisit_Break.
 //
-//go:linkname VisitCXXBaseClasses C.clang_visitCXXBaseClasses
-func VisitCXXBaseClasses(T Type, visitor FieldVisitor, client_data ClientData) c.Uint
+// llgo:link Type.VisitCXXBaseClasses C.clang_visitCXXBaseClasses
+func (self Type) VisitCXXBaseClasses(visitor FieldVisitor, client_data ClientData) c.Uint {
+	return 0
+}
 
 // Visit the class methods of a type.
 //
@@ -6417,8 +6282,10 @@ func VisitCXXBaseClasses(T Type, visitor FieldVisitor, client_data ClientData) c
 // \returns A non-zero value if the traversal was terminated
 // prematurely by the visitor returning \c CXFieldVisit_Break.
 //
-//go:linkname VisitCXXMethods C.clang_visitCXXMethods
-func VisitCXXMethods(T Type, visitor FieldVisitor, client_data ClientData) c.Uint
+// llgo:link Type.VisitCXXMethods C.clang_visitCXXMethods
+func (self Type) VisitCXXMethods(visitor FieldVisitor, client_data ClientData) c.Uint {
+	return 0
+}
 
 // Retrieve the spelling of a given CXBinaryOperatorKind.
 //
